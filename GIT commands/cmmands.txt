@@ -1,0 +1,152 @@
+cd tothe folder using cmd or right click and git bash here
+
+To create local repository use : git init
+
+
+Initialize identity(one time thing)
+git config -- global user.name "Anupa Satharassinghe"       //use "" if theres a space in between
+git config --global user.email anupa0101@gmail.com
+
+Add files to be traacked. - staging area
+git add abcd.cpp
+git add jjed.cpp
+git add infdi.txt
+
+We can also put all together and do:   git add abcd.cpp jjed.cpp infdi.txt 
+
+( to add all .cpp files use git add *.cpp)
+(to add all files use git add )
+
+Git status gives changes to be commited and the untracked file list
+git status 
+
+Remove files from being tracked- from staging area 
+git rm --cached infdi.txt
+
+use git ls-files to list the files in staging area
+
+To show the difference between the latest commit and the staged files
+git diff --staged 
+
+to show difference between the working directory and the staged files (use vscode as visual diff tools)
+git diff
+
+to commit after deleting a file. we can delte the file and then still use git add deletefilenama.txt and commit. this will delete that file
+
+# if we edit a file while in the staging area and then we check the status with git status . it will will warn that the changes made
+while the files were edited are not stagess for commit. we will have to add it back again to staging area before ocmmiting
+ 
+Commit
+
+git commit
+
+git commit -m "Initial commit or some comment here"
+
+If status checked it will say nothing to be commited. but if you edit something it will show the changes done as modified
+we have to re-add that file to the staging area and commit agin. if we just changed one file we can just add that to the staging area and commit
+git add infdi.txt
+git commit m- "I Changed infdi.txt"
+
+git log gives the history of channges that was commited- author, date and time and the comment
+to see the changes made in the commit. USE q LETTER TO ESCAPE FROM LOG
+use 
+git show e179f2f5e7886b3d4810c2262d52da414251ef8f
+or 
+git show HEAD~<number or steps tom go back> 
+git show HEAD~1
+
+
+Using gitignore- define the files and folders that you dont want to be included in staging area at all
+even git add . will ignore these
+
+create .gitignor file useing
+touch .gitignore
+
+inside .gitignore using a texxt editor add the list of files and folders you would like ommited always
+like 
+aaa.txt
+/fldr1
+/fldr2
+*.js             (all .js files)
+
+git add .gitignore
+git commit -m "I added the git ignore"
+
+
+TO GO BACK to a previous commit - git checkout <commit-hash>  
+Can find the hash from the git log 
+ git checkout 2220e072c9f47c47e119787ed6cde972afdaea69
+
+Undo add file to staging area
+git restore --staged <filename> //took the snapshot of the file in the(next environment) last commit and added to the staging area
+
+remove local changes and get the data on the staging ennvironemnt to working directory
+git restore <filename> //took the snapsho t of the file in the(next environment) staging environment and added to the working directory
+
+Assume i delted a file and commited, can restore it with.....  git restore --source=HEAD~1 <filename>
+
+Branches- 
+create branches
+git branch <branch name>
+git branch myBranch
+
+but we are still in the master branch. to switch the branch 
+
+git checkout myBranch
+
+We can create new files under these branches and change codes and commit
+ex:
+
+touch qwer.cpp
+and change values in abcd.cpp
+
+then git add these and commit
+
+then git commit -m "added files and edited some"
+
+then if we switch back to masterbranch with git checkout master
+Then all changes done will disspear and original files and their content will exist. newly added files will dissapear
+
+MERGE branches 
+
+git merge myBranch
+alll changes will be now be added to the master branch
+ 
+REMOTe repositories
+
+git remote lists down the remote reositories- blank if none
+
+to add remote repsitory
+git remote add origin https://github.com/anupa010 1/anupaNewrepo.git
+
+to push to remote repository
+
+git push u- origin master   (-u will make it remember so next time just need to use git push)
+now itll be available on github
+
+after that changes made to the local repo can easily be pushed with 
+git push
+
+git branch -d <branch name> willl deleted the branch
+
+git branch will list all the branches
+
+
+PULL
+
+use git pull to get the updates made by other in the remote repo to local repo( its similar to git fetch + git merge)
+git pull origin master
+
+
+TO CREATE A CLONE form remote repo
+
+cd gto the folder or gitbash
+
+then git clone https://github.com/anupa0101/anupaNewrepo.git
+
+
+
+
+
+
+
