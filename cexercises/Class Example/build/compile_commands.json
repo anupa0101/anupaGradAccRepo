@@ -1,0 +1,17 @@
+[
+{
+  "directory": "E:/C++ course/cexercises/Class Example/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\class_example.dir\\main.cpp.obj -c \"E:\\C++ course\\cexercises\\Class Example\\main.cpp\"",
+  "file": "E:/C++ course/cexercises/Class Example/main.cpp"
+},
+{
+  "directory": "E:/C++ course/cexercises/Class Example/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\class_example.dir\\Base.cpp.obj -c \"E:\\C++ course\\cexercises\\Class Example\\Base.cpp\"",
+  "file": "E:/C++ course/cexercises/Class Example/Base.cpp"
+},
+{
+  "directory": "E:/C++ course/cexercises/Class Example/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\class_example.dir\\Derived.cpp.obj -c \"E:\\C++ course\\cexercises\\Class Example\\Derived.cpp\"",
+  "file": "E:/C++ course/cexercises/Class Example/Derived.cpp"
+}
+]

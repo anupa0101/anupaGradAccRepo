@@ -1,0 +1,2423 @@
+string literaals?
+c++ is native language. c sharp and java are not it runs on a VM and traslated to machine code at runtime
+
+Linker takes the obj files and stiches them togther to make the one exe file
+there could be functions in other files so the linker finds them and links them. first files are compiled then linked.
+libraries are also linked.
+
+ LIBRARIES- good method- have copies of the libraries in the folder. Libraries may be available as pre-compiled binaries or we'll have to build ourselves
+usually libraries have two parts - include(header files) and library directory
+ 
+#include<iostream>
+#include "Dependencies/GLFW/include/GLFW/glfw3.h" // having the lib files in the folder and using relative path here allows anyone to compile This
+// dynamic or static linking- for this to be compiled and work. Use cmake for this
+
+In dynamic linking the libraries do not get added to the executable, instead it gets linked at run time.
+So along side the executable file the library .dll file is also needed to work. DLL- dynamic link library.  
+the file used for dynamic library linking will be named libName.dll
+along with it libNamedll.a or .lib is the static library we use with dll. it has all the locations of functions and symbols inside libName.dll so we can link agianst them at compiletime.
+Dynamic linking means that the code for some external routines is located and loaded when the program is first run. When you compile a program that uses shared 
+libraries, the shared libraries are dynamically linked to your program by default. Dynamically linked programs take up less disk space and less virtual memory if 
+more than one program uses the routines in the shared libraries. During linking, they do not require any special precautions to avoid naming conflicts with library
+ routines. They might perform better than statically linked programs if several programs use the same shared routines at the same time. By using dynamic linking,
+  you can upgrade the routines in the shared libraries without relinking. This form of linking is the default and no additional options are needed.
+Can use cmake to define static/dynamic linking
+
+In static linking the libraries get put into your executable file. the file used for static library linking wilbe libraryName.a or .lib.
+ Static linking means that the code for all routines called by your program becomes part of the executable file. Statically linked programs can be moved to run 
+on systems without the IBM Open XL C/C++ runtime libraries. They might perform better than dynamically linked programs if they make many calls to library routines
+ or call many small routines. They do require some precautions in choosing names for data objects and routines in the program if you want to avoid naming conflicts 
+ with library routines.
+ Since static linking puts the library into the executable compiler can perform optimizations compared to dynamic linking. technicalll can be faster
+ Can use cmake to achieve this.
+
+using keyword extern we can ask the linker to look for something in other translation units. ex a variable can be defined in another translation unit ex: int variable=90;. then we can declare the variable in
+ the current translation unit as extern int variable;
+now the linker will look for it in a other translation units. this is acalled external linkage/linking
+
+
+// g++ -c main.cpp vector2.cpp vector3.cpp     This will create object files .o type files for each
+//g++ main.o vector2.o vector3.o -o prog       This will create a singe executable file called prog.exe
+g++ main.cpp -Wall -Wextra -Wpedantic //good idea to use
+
+-Wall  enables all warnings about construction that some users consider questionable. it turns on a bunch of warning flags 
+-Wextra enables another bunch of flags not turned on by -Wall
+-Wpedantic  issues all warnings demanded by strict ISO c++, rejects all programs that use forbidden extensions.
+-Werror converts all warnings to errors- use it wisely
+
+
+
+DEBUGGING
+can use normal way or use g++ -g(for debugger) -std=c++17 main.cpp -o(output not optimizer) proj
+in normal way task.json is looked up. in there you can edit the c++ version 
+step over- goes to the next line
+step into- goes into it- ex: if its a function call can go into the function
+step out- get out of the function call
+
+can hover over a variable and see its value.
+you can see the variables in the variable section
+you can add expressions such as v[100]  or v[i]+v[j]  in the watch list to see the values- can get creative here and add any expression
+
+function break points- as soon as a fucntion starts execution- stop at the start of the function and start debugging
+Goto command Pallet then >function break point
+then below the call stack a place will appear to input the function name(name only ex: fibonancci). and as soon as starts execution will create a break point and debug
+
+conditional break points- break when a certain value is reached by the variable
+click on a line then goto command pallet >conditonal break point- then add the expression left=2; and will break when left=2   - USE THIS ALOT
+easier way- just add a normal break point and right click and edit bresk point. select expression and add the expression left>=3 etc.
+
+hit count- the number of times the break point needs to be hit for it to break.
+log points- when this break point is hit a message is logged into the output console(afaik the program doesnt break here?). we can add things like-  The value is now: {variableName, anotherVariableName}  use curly brackets to put variables inside
+
+Can click on the functions in the call stack and see the values of the variables by hovering over it. can click on the old recursive fucntions and see the values inside it.
+functions are called in a stack way with main on the bottom,
+
+
+Addditonally can use the memoryView plugin to look at memory
+use &variablename to find it,
+or just add &variablename to the watch list. and click on the icon view binary data. 
+
+///////////////////////////
+cmake is used to generate the makefile and manage the building process. its the industry standard. 
+CMake can generate a native build environment that will compile source code, create libraries, generate wrappers
+ and build executables in arbitrary combinations. 
+Cmake allows to provide cross platform build files that would generate platform specific project/make files for particular compilation/platform.
+A makefile is a text file that contains instructions for how to compile and link (or build) a set of source code files
+
+in the command pallet
+
+TDD- test driven development - write test code before devlopment
+1. Write enough failing test code- include compiletime and runtime failures
+2. write production code to pass the tests
+3. refactor production code and test with same tests
+4. goto step 1
+
+YOU CAN RETURN A LOCAL VARIABLE OUTSSIDE BUT NOT A PTR TO A LOCAL VARIABLE. but can retrun heap memory ptr outside.
+ONE MAIN REASON TO USE HEAP MEMEORY IS TO ALLOW TO RETURN VALUES OUTSIDE THE FUNCTION BECAUSE THE LIFERTIME IS UNTILL IT IS EXPLICITY DELETED. STACK VARIABLES GO
+OUT OF SCOPE AND PTRS TO IT CANNOT BE RETURNED.
+also stack memory is small like 1 mb so its not enough. so use dynamic memory there.
+
+Base* outsidePtr;
+{
+    Base* scopedPtr=new Base{"213jfdsn"};
+    outsidePtr=scopedPtr;// memory address is assigned to a ptr outside the scope(like returning a ptr(address) from a function)
+}
+delete scopePtr;// error as the scoped ptr is out of scope. the memory allocated is still there, you just cant reffer to it with that ptr name as its out of scope
+delete outsidePtr;//can delete as its not out of scope
+
+char is 1 byte
+1. Cant retrun a cstyle array declared inside a fucnction from a funcion. its a ptr to a local variable. use a array<int,5> array instead. can also use static int arr[5] and return its ptr but idkkkkk.
+1. Dont use std::endl especially in loops. it flushes the buffer which takes time. use a '\n'
+2. Use range based for loops when index is not needed. avoids off by one error.
+ also note the value is copied into the variable. use & to avoid this or if u need to change the value inside the loop.
+.
+	for (const int& val: nums){
+		
+	}
+
+3. void ptr doesnt have anassociated data type- can point to any data type. SO VOID POINTERS CAN BE USED TO STORE ANY DATA TYPE. caan be type casted to any type;
+int n=10;
+void* ptr= &n;
+//needd to type caast it before using it.
+std::cout<<*(int*)ptr; //  fist type cast to integer ptr using (*int)ptr  then dereffernce it using *  ----   *(*int)ptr;
+Base bsobj(3);
+void* ptrr=&bsobj; // can be used to store any type of data.
+((*Base)ptrr)->x; // can be casted and derefferrence like this or use * 
+
+#include<any>  used to store any data. c++ 17 feature. unlike variant which as a list of possible types this can store anything
+std::any data;
+data=4.5f;
+data=std::string("anupa");
+data="anupa";// const char*
+data= Base b(23); 
+
+to return value just like void pointers we need to cast it to the correct type.
+Base obj= std::any_cast<Base>(data); // if its wrong will throw an exception
+// std::any is kinda useless, variant is a type safe version of any. rarely used.
+
+3. char* buffer= new char[8]; // created a heap memory array an returned ptr to first element
+memset( //ptr to beginning,value to be filled, number of bytes to be filled )// writes to memory 
+memset(buffer, 0, 8); //char is 1 byte
+
+char** ptr=&buffer; // double ptr - ptr to a pointer
+
+3. use inbuilt functions intstead of writing it on your own . ex: find first positive integer= find_if
+4. avoid using c style arrays as they decay into pointers and we have to pass in the size as well.
+use std:: array<int,size> arr;  this has the size , empty, front, back, at(with bounds checking), [] wihtout bounds checking
+fill, swap etc. 
+When passing std::array to a fucntion we need to add std::array<int,5>. to get around not knowing the size we can use templates as below. (type is not necessary)
+
+template<class T, size_t I>
+void printArray(std::array<T, I> a)// can take in any size but must be known at compiletime right? as templates create code at compiletime.
+{
+    for (auto &i : a)
+    {
+        cout << i << '\n';
+    }
+}
+
+5. mark parameters as const if not changing ex mark vector as const when passing it as a parameter. if you dont want to
+make a copy of the inout use const and then ampersand & to mark it as consttant and pass as refference
+
+also when a variable is defined as const- its a compile time promise to no change it
+6. structured bindings works in c++ 17 and above
+
+std::unordered_map<int,std::float> cl={ {1,2},{2,3},{3,4}};
+
+for( const auto&[a,b]: cl){ // USE AUTO TO AVOID TYPE ISSUE. & to avoid copying and const to avoid change
+// a will be assigned the key ad b will be assigned the value
+	st::cout<<a<<b;
+}
+std::tuple<int, float> person= {24,176.1};
+auto[age,height]=person; // similar to int age=std::get<0>(person) and float height= std::get<1>(person);
+
+7. when theres muttiplle return vlaues instea of passingiin output variables by reffference
+declare a struct and return the struct.
+
+7. std:: optional c++17 To handle optional data. 
+example: we might or might not be able to read the text in a file. when unable to instead of returning an empty string which is optional we can use optional
+
+#include <optional>
+std::optional<std::string> readFileAsString( const std::string& filePath){
+  std::ifstream stream(filePath);
+  if(stream){ // if sucessfull return the read string
+        std::string result;
+        //read file
+        return result
+  }
+  else{
+    return {}; // return empty std::optional instead of empty string
+  }
+}
+
+int main(){
+
+    std::optional<std::string> readLine= readFileAsString("anupa.txt");
+
+    if(readLine.has_value()){//check if std::optional has a value or empty
+        std::cout<<readLine.value();// can access with .value() function
+        std::cout<<*readLine;// can access with derefferencing
+        std::cout<<readLine.value_or("couldnt read");// special function, if optional doesnt have a value default value is added
+    }
+    else{
+        std::cout<<"failed to read";
+    }
+
+    return 0;
+}
+
+
+
+6. include<variant>  std::variant is a type safe union for modern c++. HOWEVER size will be total of the all types. not memory efficient like unions but its type safe. its a tagged union.
+ can be used when you arent sure what the data type it can be. there are several possible data types.
+#include<variant> is needed here
+
+std::variant<int,std::string> data;
+data=7;
+
+std::get<int>(data) will return the value
+but std::get<std::string>(data) will throw an error. 
+data="anupa";
+now std::get<std::string> will return the value.
+// so can be used when the data type is not exaclty sure, several possible data types
+
+//we can do similar thing we did with optional with variant. instead of returning empty optional we can return a variable of another type. may be an int error code
+
+std::variant<std::string, int> readFileAsString( const std::string& filePath){
+  std::ifstream stream(filePath);
+  std::variant<std::string,int> result;
+  if(stream){ // if sucessfull return the read string
+        
+        //read file- result= some string
+        return result
+  }
+  else{
+    result= 101;// error code
+    return result; // return an error code of integer type
+  }
+}
+
+int main(){
+
+    std::variant<std::string, int> readLine= readFileAsString("anupa.txt");
+
+    if(readLine.index()==0){//check if std::variant is a string value 0 is string and 1 is int.
+        std::cout<<std::get<std::string>(readLine);
+
+    }
+    else{
+        std::cout<<"failed to read: error code"<<std::cout<<std::get<int>(readLine);
+    }
+
+    // also  auto ptr=std::get_if<std::string>(&readLine); //returns a pointer- if its the string type valid ptr will be returned but if its not string a nullptr will be returned. so we can check
+
+    return 0;
+}
+
+7. using typeNameAlias= previousTypeName;
+typedef previousTypeName typeNameAlias; // both are equal ways to give easy typenames for long and complicated types
+7.  Preprocessor statements 
+macros- essentially replaces text in code- like find and replace but can be advanced
+
+staments that start with # are preprocessor statements. compiler will preprocess these
+at the begining before all. header files are not compiled
+
+#include "filename"   this will cause the contents of the file to be copied pasted as a whole here
+
+#define Search_for_this_word Replace_with_this_word
+ex: #define Anupa 556
+#define INTEGER int 
+#define LOG(x) std::cout<<x<<std::endl;// using paramters- now we can call like LOG("Anupa")
+#define LOG(x) // this replaces LOG(x) with nothing, removes the code
+
+we can replace the main function even - for fun
+Use \ backslash to show its a new line- no need to put all in one line 
+#define MAIN int main()\
+{\
+std::cout<<"hello world";\
+}
+
+
+#if 1  
+ // code will be included or exluded based on the if condition- can be used to include or exlude source code portions for compiling
+#elif
+#else
+#endif
+
+7.if the header file is in another folder like /include.
+use #include "include/header.h"
+
+precompiled headers- previously compiled header files
+ex: when we include vector header file, adn compile it then the whole vector file needs to be added to out file and then compiled.
+lets say we make a small change in our file and we compile it again vector file needs to be compiled again.
+using precompiled headers will reduce compiletime significantly. files that arent changed frequenly can be pre compiled to improve compiletimes.
+g++ -std=c++11 precmpiledheader.h //compiling the header previously will make it faster.
+g++ -std=c++11 Main.cpp 
+
+8. use constexpr to evaluate a function with known parameters at compile time instead of runtime. makes it faster
+constexpr declares(its a suggestion) that it is possible to evaluate the value of a functionor variable at compiletime
+constexpr implicitly implies CONST WELL.
+ int a=1+4+65; //evaluated at runtime
+constexpr int a=1+4+65; // evaluatedd at compiletime improves runtiime performance
+
+constexpr int add(int a,int b){// suggests it can be done at compile time
+	return a+b;
+}
+
+constexpr int i= add(2,4); // need to add constexpr 
+i++;// THIS IS ERROR. CONSTEXPR implies its const
+USE THIS FOR RECURSIVE ONES ex:fib when the value is known. to evaluate at runtime. note you cant use high fib numbers because then itll pass the maximum constexpr recursion limit
+
+9. const member fucntions of a class- this is called CONST CORRECTNESS
+ADD CONST AFTER THE FUNCTON NAME for member fucntions  that do not change values  int getValue() CONST{
+
+int getValue() const{ // by adding const here we avoid this function doing any changes to the member variables
+//inside the function
+	m=10;// illegal as it changes m
+	changeMvalue();// illegal as it changes m
+	return m;
+
+}
+
+9. long is also generally 4 bytes , but long long is generally 8 bytes
+9.
+static functions( when present without a class)- different from static member functions
+static function is not visible outside of its translation unit(same file), which is the object file it is compiled into. 
+In other words, making a function static limits its scope. Linker wont link between files for this function - scope is limited to this file.
+same for static variables
+
+9. float are 4 bytes large - always use f to mark it as a float or else it  becomes a 8 byte double automatically.
+bool is 1 byte.
+
+9. a function returning a const user defined object
+
+const classname funcret(){
+clssname f(3);
+return f;
+}
+this prevents the value returned being used as an lvalue only rvalue
+
+10. In a class heirachy ALWAYS remember to mark destructors virtual. 
+ 
+when a base class pointer points to a derived class object and it is deleted. ONLY the Base class destuructor will be called
+and derived class destructor wont be calledd. As basse class pointers cant call deerived class functions unless marked as virtual in base class.
+
+so mark as virtual
+   virtual ~basseclass();
+
+also a good practice to explicitly declare the derived class destructor as override
+
+  ~derivedclass() override{
+}
+
+override keyword willl generate an errror if not overridden, its abt safety. USE OVERRIDE KEYWORD ONLY WHEN VIRTUAL FUNCTIONS
+
+here both derived qnd base destructors will be called. ALWAYS REMEMBER TO MARK AS VIRTUAL if being called by base claass pointers.
+constructors cannnot be made virtual
+
+12. if a classs is inherited as private or protected inheritance- cant assign a base claasss ptr to derived classobject as itsprotected /private.
+11. use initializer list in constructors. do it in order. MORE efficient than assignement. directly constructs the member variable inside the object. this prevents copy.
+dont add  className( int a, int b): a(a), b(b); in the interface... it goes in the implementation ONLY
+ className( int a, int b);// in the interface
+
+ className( int a, int b): a(a), b(b)// in the implementation
+{
+}
+
+12. weird thing to do   obj.~ClassName(); // way to call the destructor. weird thing to do rarely used
+destructor may be called twice here. can crash. there might be use cases for this. rare though. need proper wokarounds to prevent this getting crashed
+
+13. const applies to the one immediately left of it. if its the LEFT mosts thing then it applies to the one immdiately to the right
+const int * ptr1=&x;// const applies to int(const is the left most)  .the pointer points to a constant integer
+int const *ptr2=&x; // const applies to the int(immediate left) .the pointer points to a constant integer
+int * const ptr3=&x;/// const applies to the *(pointer()immediate left) the pointer is a constant pointer, value of the pointer is pointing to can change but th adress the pointer holds cannot change
+const int* const ptr4=&a;// a constant pointerpoining at a constant integer, both cannot change
+
+14. use double instead of float
+15. try to avoid global variables as much as possible. they are unsafe. use static to limit the scope of global variables to that translation  unit.
+16. functions also have addresses.
+17. Recursion may cause stack overflow- limted number of function calls
+18.Refferences- better explaination of use of & in pass by reffernce. & in pass by refference is not the address of
+Refference can be thought of another name(alias) for the same variable. avoids copying. must be initilaized when declared.
+reffers to alredy existing variable.
+int x=4;
+int& y=x;  // here y will get the same addresss and the value of x. this is whats being passeed in during pass by refference. 
+
+void print(int& c){// here int& c creates a reffernce like int& c= val;
+}
+
+also note wwe cant have references to null values.
+int* x=nullptr;
+int*& y=x;// is iilegal cant have refferrecnes to null values
+Pass by refernce is more efficient as no copies are made. use const and & to make it efficient and to avoid changing it.
+
+19. if we pass in a pointer(by value) and then change what that pointer is pointing to. it wont be changed outside. 
+however we can change the value of what its pointing to by dereffercning it. ptr*=34 is acceptable but ptr=&a; will not be expressed outside the scope
+20. using new will create heap memory. Also new will construct the object. unlike stack memory which has a block scope and will get deleted after it goes out of scope.
+ the heap memeory is willl be aviabale till its 
+manually deleted. 
+ex: int* returnptr(){
+	return new int;// this  is not illegal. 
+we can allocate memory insiide the function and return it elsewhere!!!!!!!!!!!!. we use it too, just like returning any other variable from inside a  function
+}
+new allows memory allocaion at RUNTIME. Also heap allocation is whats expensive, deleting also bit expensive. Stack is comparatively more cache friendly but you might not notice it.
+
+PLACEMENT NEW - As it allows to construct an object on memory that is already allocated, 
+it is required for optimizations as it is faster not to re-allocate all the time. Syntax  className* ptrName= new(address/ptr to create the object) className{_};
+int* ptr;// is this a memory allocation though? wont int* ptr=new int{3}; a bettter example. check this?
+
+int* newPtr= new(ptr) int{4};// the object is created in already allocated memory. created at ptr(address the ptr is pointing to).
+
+21. ptr is 8 bytes?. use size of to figure it out.
+22. use sizeof for normal arrays only. DONT use it for dynamic arrays. it wont work, itll give the size of the ptr. also dnt use it for other data structureess like vector.
+23. cant dereffernce nullptr. 
+
+24. Tuples can have differnt number of and types of variables.  
+#include <tuple>
+
+std::tuple<std::string,int,char,std::vector<int>> tup;// just defining it will cause default constructors to be called
+to make tuples use make_tuple
+tup= std::make_tuple("anupa", 3,'a',{1,2});
+
+to return values from tuples use get<index>. index should be a compile time constant. cant use variables. get returns a refference to the variable
+std::get<0>(tup)="pann";
+std::cout<<std::get<1>(tup);
+
+24.in a for loop after making the int i=0, it immediately checks if the condition is true to go into the loop body.
+then the body is executed then the increment is done at the end of the body. then checks the condition.
+
+dangling pointer is a pointer thats reffering to something thats out of scope or deleted explicitly. like a funcition returning an addresss of a local variable
+double delete is error. this happens alot when theres two pointers pointing to the same address. we can use smart pointers to avoid this. but can nullptr be delted without issue severl timess???
+
+also use new to return a an array from a function. 
+
+if new fails to allocate it will RETURN A NULLPTR. can use this to check if it was sucessfull!!!!!!!
+23. all overload operators are inherited except = operator
+
+24. returntype(*functionpPtrName)(list of ip parameters) = functionname; is the snatax for function pointer. can use this to pass in functions as parameters
+can also be defined in two parts as,
+returnType/void(*functionPtrName)(list of ip paramters);
+functionPtrName= functionName;
+also can use auto functionPtrName=functionName; //this also works and is easier
+
+can call the function with the functionptr as functionPtrName(paramters);//same as using the functionName
+
+functions can accept function pointers as paramters
+void functionAcceptinFunctionPtrs(int, void(*functionPtrName)(int,std::string)){};
+
+25. std::strings are slow as it involves memory allocation. especially longer ones. always use const & to avoid copying.
+use const char* when possible to avoid memory allocations. but for small strings, its not heap allocated in std::string
+
+When operations are performed on strings - which results in new strings created- dynamic memory allocations are performed. usiing std::string_view (c++ 17) is faster. 
+It has pretty much all the functions of std::string.
+its similar to a string but its a view into a string. CANNOT  BE USED TO MODIFY THE STRING.
+
+std::string str="Anupa";
+std::string_view strView= str; // here its just a view of the string str. no new memory allocated
+std::string_view strView2=strView.substr(1,3); // just a view of the string str, no new memory allocated.
+operations like strView2[1] etc are possible
+
+///// small string optimization.
+small strings are optimized in std::string. they are not heap allocated. on the stack memory. so dont need to really use const char* or string_view or do any things to try and optimize it.
+
+25. be carefull when adding user defined classes with heap memory to containers like vectors. when we call push_back(obj) then a copy of it is sent in. so when one goes out of scope it will get deleted and
+ double deleted(if destructor doent =nullptr) or will cause derefferncing of already deletedmemory or nullptr.
+use proper deep copy constructor or shared_ptr or use emplace_back. more info inside smart ptrs cpp.
+also can just std::move it in prevent deleting original memory allocated. using move constructor/ operator here.
+
+25. lvalue= (left hand side value)- value with a memory location. can take the address
+rvalue= on the right side of the assigment. does not point anywhere. no location. cant take the address
+lvalue reference-   s
+int a=3; int& lvaluref=a;
+but int& lvaluref= 10; //illegal. 10 is a rvalue. not an lvalue
+//using const int& lvalueref=10;// is legal, const is a workaround
+
+int srtval(int& val)// if this was const int& val  then it can take in rvalues as well
+{
+    return 8;
+}
+if we call it with srtval(10);// illegal as 10 is an rvalue not an lvalue to create a refference to. so be carefull
+also strval(x)=4; is also illegal as it returns a rvalue
+
+also be carefull using & in constrcutors as w ususallypass in like base(1,2).. this will be an error,,,BUT USING const int& a fixes it. CONST MAKES IT POSSIBLE. CONST IS A WORKAROUND.
+
+26. RVALUE REFFERENCES- used in move semantics and perfect forwarding(explained before 27). 
+
+ int&& rvalref=10; // double ampersand makes it legal. this is a rvalue refferce
+ex:
+string s1="large string  anupa"
+string s2="lomng string"
+string s3=s1+s2;// HERE S1+S2 IS A RVALUE(cant take its address)
+// here s1+s2 is first created(evlauated) then it is copied into s3.
+TO MAKEIT MORE EFFICIENT-AVOID COPYING
+string&& s3=s1+s2;
+
+//lets take a function
+void PrintLvalueref(std::string& name){// can only accept lvalues no rvalues
+}
+void PrintRvalueref(std::string&& name){// double ampersand is rvalue refference. cant pass in lvalues. have to always pass in rvalues
+// only accepts temporaryy objects. also this is more efficient. 
+// VERY IMPORTANT- although this takes in a rvalue reffernce inisde the function it gets CONVERTED to an lvalue inside.
+//so if any moving needs to be done explicitly yse std::move
+std::string newStr=std::move(name);// to actually cause the move
+}
+
+
+PrintLvalueref(s1);//legal as its an lvalue &
+PrintLvalueref(s1+s2);//illegal as its a rvalue
+
+PrintRvalueref(s1+s2);//legal as its an rvalue &&
+PrintRvalueref(s1);//illegal as its a lvalue, check this though?
+
+however something like int a,b=20;
+int&& c= a+b;
+or int c= std::move(a+b)  is useless as it doesnt really have dynamic memory or large object to move. having to allocate dynamic memory, 
+make another copy and copy large objects is expensive. so use it in such cases.
+
+//perfect forwarding- usign rvalue refferences
+consider a class called Base , both the move and copy constructor are defined. and theres a member function called printB() also a member function called returnBaseObj() which returns an object of base type.
+
+void printB( Base arg){} // printB(soembaseObj)  lvalue is passed in and print(returnBaseObj()) here rvalue is passed in
+
+template<typename T>
+void relay(T arg){// this wont perfectly forward
+    printB(arg); // PERFECT FORWARDING IS WHEN THE ARG IS A RVALUE printB gets an rvalue and if ARG is a lvalue printB gets a lvalue
+}
+
+solution:
+template<typename T>// this can be perfectly forwarded because its templatized
+void relay(T&& arg){// using && and std::forward<type> will perfectly forward
+    printB(std::forward<T>(arg)); // PERFECT FORWARDING IS WHEN THE ARG IS A RVALUE printB gets an rvalue and if ARG is a lvalue printB gets a lvalue
+}
+
+//how it works. note although its T&& it isnt guranteed to be a rvalue inisde. a rvalue needs to be input for it to become an rvalue. all other cases its lvalue
+relay(8);// here its an rvalue refference
+relay(c);// here its a lvalue refference. its an lvalue inside. 
+
+// difference between std::move<T>(arg) - converts arg to rvalue, std::forward<T>(arg)- converts arg to type of T&& (whatever type input into the relay function, can be rvalue can be lvalue)
+
+27. std::move - move semantics- transfer of ownership
+used to STEAL or transssfer the value/resource from one to the other
+string s1="large string anupa is amazing";
+string s2;
+
+s2=std::move(s1); //THIS MOVES values in s1 to s2. not copy. s1 becomes EMPTY(valid but unspecified). but still exists
+// similar to s2=static_cast<std::string&&>(s1);
+
+
+28. C++ will do ONE implicit conversion.
+ explicit can be used to prevent 
+ when constructor className(int a){}; or with more than 1 paramter but others have default values. 
+ className cl1(2);
+then if(cl1==3); //becomes true? here it willl cause an implicit conversion using a constructor to cause conversion of 3 to className type.
+ using explicit prevents it.
+Use it for situations where in constructors theres a single input parameter or can work with singe input parameter(with default values for  others and/or it)
+
+class Base{
+    public:
+        int x;
+        std::string str;
+    explicit Base(int x): x{x}{};
+    explicit Base(std::string str):str{str}{};
+    void printBase(const Base& b){ //do something}
+};
+
+Base obj1= 22; // without explicit it will call the first overloaded constructor
+Base obj2= "nupa";// wont get converetedd as "nupa" is const char array. use std::string("nupa") to cause the implict conversion
+printBase(22); will also cause the implicit conversion
+good practice to use explicit .
+
+28. command query seperation- cqs- methods should be a command that performs an action or returns data to the caller. not both.
+ 28. multimaps- one key may have multiple values. when iter through. iter->first, iter->second will give the multiple values.
+ex use case- one word may have multiple synonyms. multple values for each key.
+multisets have non unique keys. 
+multisets can be used to sort - 10, 10, 20 ,20, 20, 33,89
+
+29. const int funcrionname() will return a constant type integer. asssihn to a constant variable const int val=funcrionname()???? not sure???
+
+29. in places where deep copy is  needed- heap memory, but we dont define copy constructors for it. 
+i we call a function like func(className obj), here a copy is created(shallow) and destroyed right? will cause crashes for double delete right?  BE CAREFULL WHEN USING HEAP MEMORY INSIDE FUNCTIONS.
+using const className& obj will circumvent this as its a refference.
+
+ALSO ALWAYS USE func(CONST CLASSNAME& obj)- also this prevents r values being accepted as paramters. cant call func(8) as its a r value
+
+30. In smart pointers.
+#include <memory>
+ refference counter is thread safe- protected in data races. reffernce count is ATOMICally updated(in a single clock tik ( threads can write and update to it)
+data race= when two or more threads try to acess the shared resource. and atleast one is trying to modify it.
+hoowever shared_ptr itself is not thread safe. reffernce count is thread safe.
+ cant copy unique ptrs(in the implementation copy assignment and constructor are deleted). 
+ std::unique_ptr<className> uniqPtr= std::make_unique<className>();
+std::unique_ptr<className> anotherUniquePtr=uniqPtr; // illegal
+
+ can use shared ptrs to play around with object life times.
+ only when all the sharedptrs go out of scope it will be deleted. 
+ 
+31. creating pointers of a class dont cause constrcutors or destructors. ptr is not an instance of the class.
+no objects of abstract classes but can create ptrs and refferences.
+31. 2d dynamic array 
+
+int** ptr= new int*[10];// creating a ptr to an array of ptrs
+for(int i=0;i<10;i++){
+    ptr[i]=new int[5]; //creating a ptr to an array
+}
+//use ptr[10][5];// to access
+for(int i=0;i<10;i++){
+    delete[] ptr[i];// delete memory allocateda at each individual ptr to array
+    ptr[i]=nullptr;
+}
+delete[] ptr;//delete memory allocated at the ptr to array of ptrs
+ptr=nullptr; 
+
+2d arrays arent the best, their is no gurantee these will be contiguosly stored. it will be stored in available space. so not very
+cache friendly. so it might be slow.
+1d arrays are better as they are guranteed to be stored in contiguous memory
+method to covert 2d arrays to 1d arrays - use this
+int rows=5;
+int col=4;
+int* arrayPtr=new int [rows*col];
+for(int x=0;x<rows;x++){
+    for(int y=0;y<col;y++){
+        arrayPtr[(x*rows)+y]=1;// x*rows helps to make the row jump and y will iterate through the row. same time complexity but FASTER memory access optimized
+    }
+    // here for each row we dont have to jump to a completely different set of memory. its contiguous so much faster.
+}
+
+32.  interface files-contains declarations have .h or .hpp and implementation files have .cpp or .cxx file format
+32. static analyzer automatically analyses your code without running it. example PVS studio, cppcheck
+Based on the static analyzer , it may have different features like
+Dead pointers, Division by zero, Integer overflows, Invalid bit shift operands, Invalid conversions, Invalid usage of STL,
+Memory management,Null pointer dereferences,Out of bounds checking, Uninitialized variables, Writing const data
+
+33. when there are multiple files to compile. g++ main.cpp jkd.cpp dkin.cpp -o prog   creates a single executable file
+reason we use "hed.h"  quotations is because we are actually adding the file path here.
+34. if two obects are created ob1, ob2.  constructor for ob1 called first the ob2. but destrcutors is done in stack order. so first ob2 then ob1
+
+35. copy constructor is called when classtype obj= objOFclasstype;  one obect was just created. heap memory of the lhs may need to be created. and then content copied,
+copy assignment operator = is called when obofclasstype1=  obofclasstype1,.  both  objects were previously created.--- use classNAme& operator=(const classNAme& obj){}
+prev allocated heap memory needs to be deletedd
+remember syntax - return type is refference. &
+here the heap memory may require to be deleted and then reallocated on the lhs.
+
+vector3& vector3::operator=(const vector3& rhs){// copy assignment operator
+   if(this==&rhs){ //checking for self assginment, then do nothing
+         return *this;// this is a pointer
+      }
+   else{
+      delete x;// delete old memory on lhs
+      x=new int;// create new momory on lhs
+      *x=*(rhs.x);// assign data from rhs
+    }
+      return *this;// return itself
+  }
+
+38. #inlude<algorithm> 
+std::sort(v.begin(), v.end());  // if quick sort is used nlogn  but sc of logn???? right??????
+sort compares elements with < operator. so oveload it if needed. 
+ascending order  std::sort(v.begin(),v.end(), std::greater<int>()); // ascending order
+
+can use lambdas in the comp function. the comp function takes in two variables and outputs a bool. so make a lambda accordingly
+[](int a,int b)->bool{  // bool is optional . here we are being explicit
+    return (a<b);// for ascending order
+}
+
+std::sort(v.begin(),v.end(), [](int a,int b)->bool{ 
+    return (a<b);
+}); 
+
+std::sort(v.begin(),v.end(), [](int a,int b)->bool{ // playing around with the comp function
+    if(a==1) return false; // sorted in ascending order but 1 is at the bottom.
+    if(b==1) return true;
+    return (a<b);
+}); 
+
+35. type punning- way to get around types system. a form of pointer aliasing where two ptrs refer to the same memory location but represent that location as different types
+Not the safest thing. Use when required. this is low level kind of access.
+
+struct Entity{
+    int x,y;  // the struct is stored as contiguous memory of two 4 bytes. ( kinda like an array of two integers)
+};
+
+Entity e={2,4};
+int* position= (int*)&e; // addreess of e is type casted to integer pointer
+position[0] will access the first 4 bytes of the struct. can access value of x
+poisiton[1] will access the second 4 bytes of the struct, can access value of y 
+*(position+1) will also access y
+
+//using char to access the 4 individual bytes of an integer
+also int yValue= *(int*)((char*)&e+4); address of e is casted to a char ptr which will point to the first byte of x value. adding 4 to it will point to
+first byte of y. then casting it to an integer pointer will make it point to the whole 4 bytes of the y value.
+Here we are performiig raw memory mainpulation. we treat it as different types and access memory.
+
+36. rule of 3- in a class if i have to implement atleast one of  destructor, copy constructor and copy assignment operator. chances are
+well have to implement all of these. reason- these are needed when dynamic memory allocation is needed.
+
+37. putting copy ocnstrutor in private or vector2& operator=(const vector2& )=delete;
+will prevent copies of it being made(lets say objects are massive and copy constructor is expensive). so pass in by refference to functions.
+
+also we can similarly add constrcutor or =operators to private to prevent creation of objects. if private with a body, it can be used by member functions 
+but if private without a body , then cant use it, - like its deleted. 
+
+38. bad to compare floats :  float a=1,\; float b=0.99999999999;  fa==b might give true.
+work around std::abs(a-b)<0.0000000001  IDKKK
+
+also use f to show its a float ex: 0.00f 
+ 38. namespaces are to avoid naming conflicts 
+ but here, its ambigiuous which function will be called if not using namespaces. as "anupa" is a const char* and also can be considered a string. itll actully call the const char version. but we can froce using namespaces.
+ also namespaces allow functions to have same signature legally
+
+ namespace ns1{
+
+    void print(std::string str){
+        std::cout<<str;
+    }
+ }
+
+ namespace ns2{
+
+    void print(const char* ptr){
+        std::cout<<ptr;
+    }
+ }
+
+ using namespace ns1; // this will remove the requirement to use ns1::print()
+using namespace ns1::print;// this will allow just the print function of the ns1 namespace to be called without ns1::
+can have nested namespaces like ns1::ns1x::print();
+
+also we can use the keyword using to bring in specific namespace members to the current scope like- using std::cout (no namespace) will bring that specific member into scope
+also the keyword using can be used to bring a member from the base class to current class's scope.
+assume a public function is declared in base class, here Private inheritance is used in the derived class. So its now private in the derived class. If you just want to convert that specific function to the public, just use using Base::bFunc; inside the public:
+now can call derivObj.bFunc(); although it was privately inherited
+
+39. RAII- resource aquisition is intialization is a c++ prgramming technique to write exception safe code. prevents leaks
+
+using classes with destrcutors to impose order on resource management.  like creating then freeing heap memory, opening and closing a file, threads, 
+some times when creating new memory or resource exceptions may be thrown and program charashes,, but stilll the destructor will be called to release the resource
+
+40. return value optimization- done by the compiler- avoids unnecessary copying of objects. here copying an object is avoided when a fucntion returns an object as the value. avoids creating a temorary object for return value as well.
+constant folding- if there are expressions that can be evaluated at compile time , it will be. compiler optimization method. 
+
+41.
+move constructors  are used to transfer ownership. steal the resources. the initial objject wont point to the same resource anymore , the ownershhip is transferred.
+  classname( classname&& source){// NO CONST HERE
+	assign values from source to the objecct;
+	assign empty, null or nullptr to the member variables of the source.// importsnt to do nullptr or else will delete the memory in the destructor later
+}
+move assignment operator does the same thing. chekck if moved toitself and return *this. but also delte the prev createdd heap memory
+
+classname& operator=(classname&& source){
+   
+	if(this=&source){ return *this}
+	else{ 
+	// FIRST DELETE PREVIOUSLY CREATED HEAP MEMORY
+	assign values from source to the objecct;
+	assign empty, null or nullptr to the member variables of the source.
+	return *this;
+             }
+}
+//IMPORTANT TO SET TO NULLPTR AS DELETING NULLPTR IS OKAY.
+
+std::move can be used to achieve this.std::move will convert to a rvalue refference, so that the move constructor or move assignment operator will be called;
+classname ob1;
+classname ob2=std::move(ob1);// no copy constructor. now ob1 will have null, empty, nullptr, 0 values . ownership transferred to ob2. move constrcutror. This is similar to casting to rvalue (classname&&)ob1 but use std::move. its better 
+classname ob3;
+ob3=std::move(ob1)// same as above but move assignment opertor;
+
+42. Usign above in vectors std::move(object name) can be used to prevent copy constructor being called.
+classname ob(1,2);
+vec.push_back( std::move(ob)); // this will prevent copy contructor being called. or can use emplace back
+//furthere optimize this by reserving vec.reserve(20);
+43. define a class as friend if you want that class to beable to access your private and protected variables.
+use friend class keyword
+ex:   friend class vector3;// defined in vector2
+
+so now vector3 can access private and protected variables of vector2.
+
+If atleast one of the copy constructor, copy assignment operator, move constructor, move assignment operator or destructor are defined then copy constructor, 
+copy assignement operator, move constructor, move assignment operator are not auto generated. so always follow rule of 3 and rule of 5. to make it easy just use =default 
+also if any constructor(overloaded, copy, move) is defined it will prevent the default constructor being auto defined .So mostly DEFINE all. use =DEFAULT to make it easy
+
+44. when objects of the derived class is created determine which constructor to call when the base class has overloaded constructors. 
+class base{
+       base(int a, int b){ // NO DEAFULT CONSTRUTOR
+	//constructor
+	}
+};
+class derived{
+       derived(): base(1,2) { // use : followed by the required constrcutor with values to specifiy which constrcutor to call
+	//constructor
+	}
+};
+
+when derived ob1; is created the overloaded base constrcutor with 1,2 will be called.
+or else as the default constructor is not defined for base , it wont know what to do when a derived class obect is created
+
+45. if only an overloaded constrcutor is defined in the base class. no defined default constructor . then when an object is created of derived class, then it wont know what to call as the default oneis not aavailable 
+so will havee to explicitly use :base(parameters with values)
+or else define a default constructor.
+
+46. when a base classs pointeer points at a derived class object and when it calls a fucntion. it will call the base class version of it.
+so use virtual in the base class to force to use the derived class version. and also may be mark the derived class fucntion as override. 
+base class ptrs cant invooke derived class only functions . (not virtual in base or declared in base)
+
+also here the BASE DESTRUCTOR  will be called. so mark base destructor aas virtual as well
+even if marked as virtual we want to call a base class fucntion. baseptratderiveddclasss->baseclasssname::baseclasssfucn();
+we can use a bse class ppinter pointing at a base class object to call virtual marked fucntions. no issues.
+// this is called dynamic dispatch.
+
+//NEVER CALL VIRTUAL FUNCTIONS INSIDE CONSTRUCTORS OR DESTRUCTORS. so lets say we create a derived class obj with a drived class ptr. it will call the base class cconstructor first. 
+lets say a virtual function is called inside base classs constructor. then the derived class overriden version
+needs to be called, but derived class obj is not created yet to call a function. behaviour will be weird.
+
+when a class is marked as final no classes can derived from it.
+class dog final{};
+when a virtual function is marked as final no class can override it
+virtual void printtt() final{}
+
+ALSO IT SEEMS WHETHER YOU ARE USING OBJECTS OR POINTERS TO OBJECTS, WE HAVE TO DEFINE AS VIRTUAL OR ELSE THE BASE CLASS VERSION WILL GET CALLED???
+ SAW IT ON BO QIANA VID, BUT IT WAS A DERIVED CLASS OBJECT CALLING AN INHERITED FUNCTION. THERE WAS A FUNCTION INSIDE THE INHERITED FUNCTION THAT WAS OVERLOADED IN BOTH BASE AND DERIVED. AND THE DERIVED VERSION GOT CALLED
+ANYWAYS ALWAYS DEFINE AS VIRTUAL
+
+47. compiler generates a default constructor but if we derive an overloaded constructor it wont gnerate the default constructor;
+
+Base(int x){} will accept floats as well as floats can be converted to integers.
+Base(float x)=delete; // prevents floats being used to create the object
+
+47. good to mark as VIRTUAL the base class destructor and the functions to be overriden in the base class.
+48.vtablr- virtual table
+vtable pointer is included as a member variable. when functions are called, vtable determines which function to call when overriden. at runtime. runtime polymorphism
+
+49. if theres atleast one pure virtual functon, its an iterface or abstract classs. and cannotbe instantiated. also pure virtual functions need to be overriden . compuslory. not
+normal virtual fucntions overriding is not compulsory.
+pure abstract classes have no data members and have only only pure virtual functions- no implementation.
+
+interface segregation principle- split large interfaces into smaller and more specific ones so that clients only need to know about the methods that are of interest to them.
+so use mulitple inheritance- use vitual inheritance to avoid same being inherited from the top base class. or use :: to specify which class the function belongs to. 
+When the constructor is overriden as no default construcotr is created. when creating objects of a derived class add the constructors of all the above classes to the memeber initializer list. becasuse theres no default for the ones
+ with overidden constructors of the classes above.
+however dont use inheritance too much, reduce heirachies
+
+use composition for code reuse than inheritance. composition is better. try to inherit the interface than its implementation. 
+code reuse with inheritance is where you put the common functions and methods in a base class and inherit the common functionality to the derived classes.
+
+in Compostion we add the common functionality to another class and create a pointer to that class as a data member of the classes that needs that functionality. this apporach is better
+for code reuse. 
+advantages: less code coupling, no inheritance from that class so protected members stay protected and encapsulation is maintained. (similar to pImple?)
+dynamic binding- unlike inheritance bound at compile time, composition can be bound at compile or run time
+
+also with inheritance we can only have one instance of the base class but with composition we can have multiple instances of the class.
+
+50. IF YOU ARE USING A BASE CLASS POINTER(pointing to a derived class obj),
+YOU CANT CALL DERIVEDD CLASS ONLY FUNCTIONS WITH A BASE CLASS POINTER.
+51. advantaage of using base classs ppointers. we can point to any derrivedd class.
+also we can have common functions in the base class and just directly have them called when non virtual. no need to define in the derrivd classses as well.
+derived class pointers can call base class only functions that are inherited. no need to be defined in the derived class as well.
+
+
+
+52. int a=3.2// a=3  but int a{3.2} will give error. it will check.
+53. multiple inheritance
+virtual inheritance ensures inly one copy of the base class's member Variables is inherited
+class BASE{
+	int a, int b;
+};
+class base1: virtual public BASE{
+	//if you add int c here and in base2 also add int c.. wont work here. needs to be inherited higher up.
+};
+class base2: virtual public BASE{
+};
+class derivedclass : public base1,base2{
+};
+
+DERIVED CLASS REFFERENCES- JUST LIKE POINTERS
+
+Base baseObj;
+Derived derivedObj;
+
+Base& baseRef= baseObj;// base class refferene to base class object
+Derived& derivedRef= derivedObj;// derived class refference to a derived class objects
+Base& baseReftoDerived= derivedObj; // base class reffernce to derived class object
+
+SIMILAR TO POINTERS - BASE CLASS REFERENCES CAN ONLY SEE THE BASE CLASS MEMBER VARIABLES AND FUNCTIONS UNLESS DEFINED AS VIRTUAL. 
+SO THE BASE CLASS VERSIONS WILL BE CALLED IF ITS LIKE  baseReftoDerived.print(); // bases class version of print will be called unless defined as virtual
+
+NOTE that this also means it is not possible to call Derived::deriveddFucntion() using Base refferences or base pointers. They are unable to see anything in Derived.
+
+IMPORTANTTTTT
+
+void Func(Base& bRef){ // here we can call Func with derived class objects as it will be like Func(Base& bref= DerivedObject);
+    bref.BaseFunc();// However the BASE CLASS  version of the function will be called. using virtual will cause the derived function will be called.
+}
+ REFFERNECES WORK JUST LIKE POINTERS
+class Base{
+    private: 
+        int x, y;
+    public:
+ 
+    Base():x{0},y{0}{
+        
+    }       
+        virtual void Print(Base& b){
+            std::cout<<"Base function"<<std::endl;
+
+        }
+
+
+};
+
+class Derived: public Base
+{
+    private: 
+        int x, y;
+    public:
+
+    Derived():x{0},y{0}{
+        
+    }    
+        void Print(Base& b) override{
+            std::cout<<"Derived function"<<std::endl;
+
+        }
+};
+ int main(){
+
+    Derived derivedObj;
+
+    Base& baseRef=derivedObj;
+    Derived& derivedRef= derivedObj;
+
+//HERE Print(Base& b= derivedObj) although it accepts a base class refference, it can accept a derived class object as base class refferences ca reffer to derived class objects
+// we can do the same thing if Print(Base* bptr); we can pass in derived class objects addresses into it.  Print(Base* bptr=&DerivedObj) As base class ptrs can point to derived class objects.
+    baseRef.Print(derivedObj);// calls the base class version if not defined as virtual. 
+    derivedRef.Print(derivedObj);// calls the derived class version
+;
+
+    return 0;
+ }
+
+ ////////////////////////
+
+         void func(Base obj){// defined outside the classes
+            obj.Print(obj);// this is pass by refference 
+             std::cout<<"Base obj function"<<std::endl;           
+        }
+    
+    Derived derivedObj;
+    func(derivedObj);// here the function accepts the Base object but we use a derived class object. It seems it is casted to a base class object. despite the 
+//internal Print fucntion being defined as a virtual one , the base verision is executed. because obj is casted as soon as func(Base obj=deivedObj)?????
+
+
+// BUT THIS DOESNT HAPPEN IN POINTERS THOUGH - if the function accepts a base class ptr and we addd a derived class ptr- wont get casted to a base class ptr RIGHT?? 
+the correct verison will be implemented (as its pointing to the specific object?)
+
+54.  classname()=default; // constructor will give 0, empty,null and nullptr values to the variables.
+55. deltegating constructors. we can have overloaded constuctors call other consructors in the member initializer list
+
+classname(): x{0},y{0},ptr{nullptr}{
+}
+classname(int a,int b): classname(){// this overloaded constrcutor calls the previous constructor before executing the body
+ x{a};  //BUT DONT ADD THESE TO THE MEMBER INITIALIZER LIST. CANT MIX UP. ADD THESE IN THE FUNCTION BODY
+y{b};
+}
+
+// ALSO PERFECTLY SAFE TO CALL MEMEBER FUNCTIONS INSIDE CONSTRUCTORS.
+// WHEN USING MEMBER INITIALIZER LISTS TO INITIALIZE VARIABLES- the variable is directly created inside. 
+Assume it has a std::string str; member variable. when an object is created first a empty dtring object will be created( with defautlt constructor if use defined object)
+because it runs this code in the memberr variables - std::string str;// creating an empty string
+then another string will be created and then assigned to the member variable. This is generally immportant when using expensive non primitive data types.
+member initializer lists avoid this.
+
+56. organizing data memebers in the order of highest to smallest will help minimize size of an obect. minimize padding.
+the size of chunks is determined by the largest type. for int , itll be done in 4 chunks. for float its done in 8 sized chunks.
+
+57. Unless we speccifically release heap memory it willl stay. stack memory is scoped and will auto release.
+
+57. c style strings- they are like arrays
+const char* str= "anupa"; // has a termination chracter of \0 at the end
+char* str2= "anupa";// can do str2[4]='d' as its not const;
+std::cout<<str; //works beacuse the null terminator is there. a normal arrray will not be able to work like this because it doesnt have the \0 to know where to stop
+
+57. string literals are const char array "double quotess something and ends with \0"
+string lliterals alwsys in read only memory
+
+57. str.find("an")==std::string::npos when not found
+57. ternary operator
+int var;
+int val=4;
+var=val>5 && val< 20 ?10:8; // if the value of cal is greater than 5 and lesser than 20 ,assign 10 to var else assign 8 to var
+
+57. ALWAYS MARK MEMBER FUCNTIONS A CONST IF IT DOESNT MODIFY THE MEMBER VARIABLES. OR WILL CAUSE ISSUES WHEN inside functions (const Classname& ) 
+is used. this function will only allow guranteed const member functions to be called inside it.  guranteed with const keyword.
+
+class Entity{ //IMPORTANT
+    public: 
+        int x;
+        int retVal() const{// IF THIS FUNCTION IS NOT MARKED AS CONST- THE FUNCTION BELOW WILL THROW AN ERROR. BECAUSE ITS UNSURE IF IT MIGHT CHANGE THE contents
+                            // OF THE MEMBER VARIABLES- THE FUNCTION BELOW IS DEFINED HAS A CONST PARAMETER. DOESNT ACCEPT METHODS THAT ARENT GURANTEED CONSTANT. 
+                            SOOOOOOOOOOOOOO ALWAYS MARK AS CONST IF THEREES NO CHANGES TO THE MEMBER FUNCTIONS
+            return x;
+        }
+        // can have TWO versions of retVal too. const version and non const version with differrent implementaitons even. thats allowable. will select the appropriate version based on the situation**********
+
+};
+void func(const Entity& e){
+    std::cout<<e.retVal(); //AS IT'S CONST ENTITY , IT WILL THROW AN ERROR IF THE MEMBER FUNCTION IS NOT GURANTEED TO BE CONST WITH THE CONST KEYWORD
+}
+
+
+
+
+58. 
+keyword static when defined outside the class means it linkage is limited to the translation unit(file here)
+the scope is limmited to the current file- linker cant link it else where. Same for static functions. its like a private thing to a file.
+this can also be achieved with anyonymouse namespace  namespace { void func(){}}, we can call func normally but scope is limited to this file.
+Use static when making global variables because the linker might linking it elsewhere in other translation units
+static globalVariable=90; // always use for static variables unless you dont mind being shared across
+
+static storage is also another storage like stack and heap.
+
+
+
+static int a=0;// static variabless are allocated in the executable- binary.
+// also will only be linked internally - same translation unit
+void printnum(){
+	 static int val=0; //this will only be executed once(initialized once). even if the function  is called multiple times
+     //when static is used iniside a block scope- ITS SCOPE HERE WILL BE LIMMITED TO THIS BLOCK BUT LIFETIME WILL BE THE PROGRAM LIFETIME
+	val++;
+	std::cout<<val;
+}
+even if the function is callled multipe times. the value will increment. wont be initialized to zero again.
+
+also its NOT  global . it has a scope. however lifetiime will be present forevr since its in the binary.
+ex:  val=1000; // will throw an error - not declared within the scope
+
+
+
+59. If static variables are defined inside a class. its different from outside the class-
+const static int static_var_name2=6;
+
+scope is inside the class. its one variable for all the objects, memory shared with all the objects. owned by the class. dont need an object to calll it. can have values without having any objects even.
+address them with   classname::static_variable_name=7; // works
+
+static int returnval(){   // for member functions we need to include static to work with static variables
+ return static_variable_name;
+}
+
+and call it without an obect like
+classname::returnval() 
+
+STATIC METHODS CANNOT ACCESS NON STATIC MEMBER VARIABLES. IMPORTANT. Because it doesnt know which instance of the class to access. 
+
+DONT USE OBECTS TO CALL STATIC FUNCTIONS OR VARIABLES
+ALSO ONLY MENTION STATIC IN STATIC FUNCTIONS IN DECLARATION(HEADER FILE) NOT
+IN THE IMPLEMENTATION FILE.
+
+
+EXAMPLE
+class Entity{
+     public:
+        static int x,y;
+        int g=0;// non static
+        static void print(){// 
+            std::cout<<x<<y;
+          //  std::cout<<g; //ILLEGAL - STATIC MEMBER FUNCTIONS CANNOT ACCESS NON STATIC VARIABLES
+        }
+        
+
+};
+int Entity::x;// NEED to be declared like this to work. can set it equal to something if needed
+int Entity::y;
+
+int main{
+
+    Entity e;//no need
+
+    Entity::x=4;// use the class name to refer to staic variables. using objects also works but useless as all objects share same variable
+    Entity::y=9;
+    Entity::print();
+}
+
+ALSO assume you only have static member variables and member functions in a class. so can work without needing to create instances 
+so we can make the constructor private or constructor =delete to prevent instances of the class
+
+ALSO MAKE CONSTRUCTOR PROTECTED IF YOU WANT NO INSTANCES OF THE BASES CLASS BUT WANT DERIVED CLASS TO USE THE CONSTRUCTOR TO CREATE DERIVED OBJECTS.
+
+60. enums- way to name cetain integer values. we can also limit the values that can be added.
+enum ENUM1{A,B=4,C}; //defualt willl start from zero unless specified
+ENUM1 val= B; //val=4
+ENUM1 val2= 4; //ILLEGAL- ENUMS help us limit the integer values that can be added
+
+enum ExamplChar : char // unsigned char etc can be added here as they are also INTEGERS
+{
+
+}
+
+....example with enum defined inside a class - data members defined using enums
+class LOG{
+    public:
+        enum Level{ level0,level1,level2}// declarationn of the enums- these are not variables just the enums
+
+        Level levelVar=level0;// this is the member variable
+
+        void printLevel(const Level& lvl){// here the enum name is passed in
+            if(lvl==level2){// integers being compared
+                std::cout<<lvl;
+            }
+        }
+    private:
+     Level PrivatelevelVar=level0;// this is the private member variable
+}
+
+int main(){ 
+    LOG lg;
+    lg.levelVar=LOG::level1;//as the enum is definedd inside the log class
+    lg.print(LOG::level2); // HERE THE SCOPE RESOLUTOION IS NEEDED AS ITS AN ENUM inside the LOG class not outside
+    return 0;
+}
+
+
+
+60. intead of copy and paste and overload functions just use templates.
+templates make the compiler write code for us.
+ template< typename T>
+T square(T a)
+{ return a*a;}
+
+when we call square<int>(5),square<double>(5.3), square<float>(4.344)
+the compiler generates the overloaded functions for the int, double and float at compile time.
+
+square<float>(5.44) is better than square(5.44) as it is explicit as to which overloaded function to call.
+we can also say square<int>(5.44) and it will do the integer version of 5.44 and return 25.
+
+when we call the function with a certain data type, (instantiate the templatized fucntion), the compiler will generate
+the overloaded function.
+
+SAME THING can be done with auto. but need c++ 20
+auto square(auto a)
+{ return a*a;}
+instantied when we call with a function. it will generate the overloaded function for us. 
+
+g++ -std=c++20 programname.cpp to run in c++ 20
+
+ template< typename T1, typename T2, typename T3>
+T3 sq(T1 a, T2 b)
+{ return a*b;}
+sq<int,float,float>(1,3.534); // inside the <> put the list of types in the order mentioned in the template
+
+
+ template< typename T1, typename T2>
+auto sq(T1 a, T2 b)// auto derives which data type to use
+{ return a*b;}
+sq<float,float>(1,3.534); 
+
+ template< typename T1, int  b>
+T1 sq(T1 a)
+{ return a*b;}
+sq<int,6>(1);
+
+//with default values
+ template< typename T1=int, int  b=4>
+T1 sq(T1 a)
+{ return a*b;}
+sq(1);//no need to be explicit, default values taken
+
+
+61.  to compare == floats and doubles with very high precision use 
+#include<cmath>
+std::fabs(a-b)<0.000001 // some threshold value based on the data type
+
+61. The function alloca(size in bytes) is used to allocate memory for a stack frame. It’s just an unconventional method of dynamically allocating memory.
+ When a function returns its value or the defined memory’s scope expires, the memory is automatically released.
+A void pointer pointing to the beginning of the allocated memory is the result of this function. 
+Even if we just allocate memory with a size of 0, it will still do so and return the void pointer for that starting location.
+it automaticallly frees up space. memory allocated is fixed and if exceeded will  cause segmentation fault. be carefull when you use it.
+int* ptr= (int*)alloca(InputSize*sizeof(int)); // so using a runtime value we can allocate stack memory at runtime (contrary to the popular opinion)
+
+ like malloc being used for dynamic heap memory allocation.
+
+61. singleton- classes with just single instances. Having singletons is okay. some use it similar to a namespace.
+singleton is a design pattern
+
+class random{// pseudo random number generating class- singleton
+    public:
+        Random(const Random&)=delete; // delete copy constructor  and also may be delete copy assignment operator
+
+        static Random& Get(){
+            static Random instance; // create a static variable instance inside the function. can do as the constructor is private
+            return instance;// only instance created
+        }
+        
+        static float GENERATE(){// static function is needed to work with the static variable
+            return Get().InternalGenerate();// calls the private random number generating function with the static object
+        }
+    private:
+        float m_random=0.45; // pseudo random number 
+        Random(); // constructor is made private. can only make instances inside the class
+        float InternalGenerate(){ // this function creates the random number
+            return m_random;
+        }
+};
+
+inside main
+float generated_randomNumber= Random::GENERATE(); //generate is a stati function. HERE class name LOOKS LIKE A NAMESPACE
+
+62. Variadic funcrtions- functions with variable number of arguments
+use parameter pack- accepts zero or more argumentss
+template< typename T, typename... Args>// parameter pack
+T Sum(T start, Args... args){
+    return start+ Sum(args...);//think recursively
+}
+// this causes large code to be generated
+
+
+#include<initializer_list>//DIFFERENT FROM MEMBER INITIALIZER LIST-  take variable number of arguments with initializer_list
+int Sum(std::initializer_list<int> list){// we can templatize this to accept any type too
+    total=0;
+    for(const auto& element: list){// can iterate through the list like a vector
+        total+=element;
+    }
+}
+sum({1,2,3,4,5}); //arguments inside {}
+63. template values and types need to be known at compiele time. cant use variables to decide it. using constexpr variable can remove the error when using a variable in a template 
+ when creating templatized classes.
+when creating objects always use the data type explicity
+classname<int> obj1(1,2,3);//
+but modern c++ has Class Template Argument Deduction (CTAD)  will auto dertermine.
+
+also code for seperate classes are created. class for int, float etc
+also classname<int,5>  and classname<int,7> will also create different classes.
+
+if there are static variables inside , each of these classes will have their own seperate static variables.
+
+64. Union is a special class type that can hold only one of its non static data members at a time. 
+and takes the size of the largest data membr type. At a time can only hold one member.
+  Unions can have memeber functions and constructors and destructors. but not virtual functions
+cannot have base classes or be usedd as a base class.
+
+This is a kind of way of type punning.
+anonymous unions are also there. no name
+union U{
+		int a;//all stored in same memory. size is the largest size
+		float b;
+		char x;
+};
+U myunion;
+myunion.a=40;
+
+myunion.a and myunion.b  will give same value. 
+accessing a, b and x will give same value . but some times it wont fit. ex an int value will not fit in short so different values may come out'
+
+
+example:
+struct Vec2{// 2d vector
+    float x,y;
+}
+struct Vec4{// 4d vector
+    union{ // anonymous union
+        struct{ // two anonymous structs
+            float x,y,z,w;
+        }
+        struct{// both are same size.
+            vec2 a, b;
+        }
+        
+    }
+}
+vec4 V={1.0f,2.0f, 3.0f, 4.0f};
+ we can access the variables of V in two different ways(like type punning) here
+ V.x; to access just x and Vector.a; to access x and y both together
+
+
+66. Better to find bugs at compile time or link time than run time.
+constexpr - declares the possibilitiy to evaluate the value of a fucntion of variable at compile time. improves runtime performance
+we impilicitly make it CONST. constexpr variables should be immediately initialized for it to work.
+  int i=2+4+20; // constexpr int i= 2+4=20 will do it in compile time.( since it is implicityly const- cant do i++)
+
+constexpr int add(int a,int b)
+{ return a+b;}
+constexpr c=add(a+b);// evaluate in constant time
+
+67. assert performs runtime assertion checking -  need #include<cassert>
+static_assert performs compile time assertion checking
+
+#include<cassert>
+int age=-3;
+assert(age>0); // will crash the programhere and say age>0 -where it crashed.
+assert(age>0&& "age was less than zeero"); // will crash the program here and say age>0&& "age was less than zeero" -where it crashed.
+done in runtime
+
+to do in compile time assertion/ for error checking. - use case. at runtime figure out the archicture sizeof(int)==4 assert
+constexpr int age=-3;
+static_assert(age>0&& "age was less than zeero"); // will cause compile time error in the program here and say age>0&& "age was less than zeero
+static-assert(sizeof(int)==4&&, "int is 4 bytes")
+
+can use to assert constexpr functions as well- for error checking.
+
+68. pimpl = pointer to implementation
+make api more stable. makes the size of the structure just the size of the pointer.
+
+inside the class we dont make the member variables visible. instead we define them in another class and add ust a pointer to it.
+ptrToimpl* chr;
+and we implement the ptrToimpl class seperately hidden from the user.
+
+69. int a=-2, unsigned b=1;   due to 2s complement a>b will be true. be carefull when you compare different types.
+
+70.  float a=45.4545;
+double b=(double )a;  //c style casting- will perform static_cast, const_cast and reinterpret_cast
+
+static_cast<new type>(expression). //static cast
+double b=static_cast<double>(a);
+
+STATIC CAST CAN CONVERT DERIVED CLASS TO BASE CLASS. TREATING BASE AS DERIVED IS NOT SAFE 
+IN STATIC CAST. will give error.
+
+class base{
+	public:
+	     int  basedata{1};
+	      base(): basedata(11)  {
+		}
+	    virtual  void printtt(){ cout<<basedata}
+}
+class derived: public base{
+	public:
+	     int  dervieddata{2};
+	      base(): dervieddata(22)  {
+		}
+	      void printtt(){ cout<<dervieddata}
+}
+
+base b;
+b.printtt(); //GIVES 11
+derived d;
+d.printt();//gives 22
+
+(static_cast<base>(d)).printt() ;// THIS GIVES 11. TREAT DERIVED AS BASE.
+
+But BASE AS DERIVED IS NOT SAFE- will give error. (static_cast<derived>(b)).printt() . for objects always use 
+but can cast pointers up and down the heirarchy. but use dynamic cast its safer. even for refferrences use dynamic cast.
+
+dynamic_cast<new type>(expresssion) = CONVERTS POINTERS AND REFFERENCES TO CLASSES UP, DOWN, SIDEWAYS ALONG THE INHERITANCE HEIRACHY.
+done in run time and is expensive. if it fails it will return nullprtr. IT DOES THE CHECKS TO SEE IF ITS VALID. validates if the ptr is pointing to correct type.
+to use dynamic cast the base class needs to have atleast one virtual function ex: virtual destructor. as it can only cast polymorphic types
+
+base* b=new base;
+derived* d= new derived;
+
+(dynamic_cast<base*>(d))->printt() ;// works- gives 22 because its now base cls ptr to derived class obj. and printt is virtual
+
+(dynamic_cast<derived*>(b)).printt() ;//DOESNT WORK because then it would be a DERIBVED CLASS PTR pointing to base class object
+
+BUT if base* b=new derived;
+
+(dynamic_cast<derived*>(b)).printt() ;//THIS WORKS because its pointing to a derived classs object 
+
+
+reinterpret_cast<new type>(expression)-convert ptr of some data type into a pointerr of another data type(doesnt have to be related), even if they are different
+doesnt check if ptr type and data pointed by the ptr is same or not. Dangerous. usuallly used when workinng with bits. 
+
+const_cast can be used to remove the const nature of an object defined as const.
+const int i=9;
+const_cast<int&>(i)=6;// removes const
+71. nested classes are okay. will only be avaiable inside the class.
+if the nested class is made public. we can make instances of it using  bigclass::nestedclass nestclasOBj;
+
+72.
+
+class AbstractClass{
+         public:
+	int x;
+         virtual void printit() const =0; //virtual function make this an abstract class / interface
+};
+
+class DerivedClass: public AbstractClass{
+
+	void printit() const override{ 
+	std::cout<<"abc\n";
+	}
+};
+class AnotherClass{
+
+     public:
+	AbstractClass ptr*;
+	AnotherClass(Abstractclass* ptr):ptr{ptr}{// this construtor is sused to inject the derived class object that the abstract base class ptr will point to.  AbstractClass obj(&Dertiived class objecct);
+	}
+	void PRINTOUT(){
+	ptr->printit(); // if the derivedclass address is injected, the derived class version of the function will be called inside the PRINTOUT function
+	}
+};
+
+72. const classname& func(){} 
+returns a const refference. 
+
+also member functions marked as const and not marked as const are two overloads. two functions
+apropriate version will be called.
+
+72. use size_t for array indexing and loops.
+
+72. user defined literals- way to define units- always make it constexpr or else this being done at runtime is very costly as its done each time
+only a set of certiain types are allowed as input paramters like const char*, unsigned long long int, long double ,char etc
+return type can be of any type.
+
+cosntexpr long double operator"" _cm(long double x){return x *10;}
+constexpr long double operator"" _m(long double x{return x*1000;})
+constexpr long double operator"" _mm(long double x){ return x;}
+
+int main(){
+    long double height= 3.4_cm;
+    std::cout<<height<<std::endl; // output is 34
+    std::cout<<(height+13.7_m)<<std::endl; //output is 13734
+}
+
+73. Functors- function objects. its a function with a state. achieved with operator overloading of ().
+can use this to compute one member variable and then add to the class. and then do the other member variable and add to the class. 
+
+struct functorVal{
+    int val1;
+    float val2;
+
+    int operator()(int newVal){
+        val1=newVal;
+        return val1;
+    }
+    float operator()(float newVal){
+        val2=newVal;
+        return val1;
+    }
+
+};
+
+functorVal vfunctor;
+vfunctor(3);//functor val1=3  here the first operator overload is used
+vfunctor(3.2f);//functor val2=3.2f here the second operator overload is used.
+
+then can read using v.val1 and v.val2 to access the values
+
+74. default arguments
+int defArgfunc(int a=1, int b=2, int c=3){
+}
+defArgfunc();
+defArgfunc(11);
+defArgfunc(22,33);
+all are valid.
+
+75. use valgrind to look at memory leaks,fsantitizer to detect data races. compiler explorer to look at assembly
+cpp insights to see the compiler code generation. 
+doxyegn for generating documentation
+
+76. template meta programming- tmp- ability of c++ to do compile time computattions to create more generic and optimised code.
+
+76. #include<chrono> // precision neutral library for time and date
+std::chrono::system_clock: // current time of the system- can be changed so not steady
+std::chrono::steady_clock: // goes at uniform rate
+std::chrono::high_resolution_clock: //provides the smallest possible tick period 
+
+std::chrono::duration<int ,std::ratio(1,1)> :represents time duration. ratio <1,1> is seconds ratio <60,1> is minutes
+std::chrono::microsecond mi(2700); // 2700 microseconds
+std::chrono::nanosecond na=mi; //2700000 nanoseconds
+
+std::chrono::system_clock::time_point tp= std::chrono::system_clock::now();//represents a point in time- current time of the system clock
+std::cout<<tp.time_since_epoch().count(); // print time since time_since_epoch
+tp=tp+std::chrono::seconds(2);// adds two seconds
+std::cout<<tp.time_since_epoch().count(); // print time since time_since_epoch
+
+
+std::chrono::steady_clock::time_point start= std::chrono::steady_clock::now();//represents a point in time- current time of the steady clock
+//do something
+std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();//represents a point in time- current time of the steady clock
+std::chrono::duration d=end-start;
+
+77.  #include<random>
+ 
+77. use inline is a good idea. esepcially for small code.
+overhead is there to jump to the function call- expensive.
+hardware can guess the other instructions easily. other optimizations are possible.
+usually ignored so force the copiler to make it inline
+
+however code size may increase if copied and pasted several times good is called just once or only a few times
+. also may make debugginf harder.
+
+inline is just a suggestion
+but
+__atrritbute__((always_inline)) inline int func()   will force the compiler to definietly use inline. 
+
+
+when a fucntion is called. a fucntion call instruction is made. stack frame is created and a the parameters and the return address is pushed on to the stack frame.
+we need to jump to a different part of the binary and then go back. have to jump around memory. This is the overhead of a calling a function.Inlining avoids this
+
+78. lambda- unnamed INLINE function object capable of captturing variables in scope. keeps the code clean. use lambdas for small throw away codes.
+they are inline functions which are not reused and therfore has no name. anonymous INLINE throw a way functions
+[captures](parameters)->returnType{body} 
+LAMBDAS ARE POWERFULL THAN FUNCTIONS BECAUSE IT HAS ACCESS TO VARIABLES INSIDE ITS ENCLOSING SCOPE( the enclosing { lambda inside this has access to variables inside this- can capture })
+[Captures [] captures nothing, [&]captures all by refference, [=] captures all by value, [a,&b] captures a by value and b by refference, [this] captures current object by refference]
+Captures are used to take in outside variables.
+
+example: 
+int main(){
+     int a=9;
+     int b=0;
+     std::vector<int> vec={1,4,23,43};
+     std::for_each(vec.begin(),vec.end(),[&](int x){std::cout<<x+a<<std::endl;}); //LAMBDAS CAN CAPTURE THE VARIABLES INSIDE THE ENCLOSING SCOPE
+     std::for_each(vec.begin(),vec.end(),[a](int x){std::cout<<x+a<<std::endl;}); //capture by value- mark as mutable to change value of a
+     std::for_each(vec.begin(),vec.end(),[&a, b](int x){std::cout<<x+a<<std::endl;}); //LAMBDAS CAN CAPTURE THE VARIABLES INSIDE THE ENCLOSING SCOPE
+ 
+    return 0;
+}
+
+Instead of setting a function pointer to a function we can set it to a lambda.
+auto funcPtrLambda=[](int x, int y){
+    std::cout<<x+y<<std::endl;
+}
+funcPtrLambda(8,4);//lambdas can be called like this.
+
+void printVector(vector<int> v)
+{
+    // lambda expression to print vector // std::for_each requires #include<algorithm>
+    std::for_each(v.begin(), v.end(), [](int i) { std::cout << i << " "; });// print all
+    std::for_each(v.begin(),v.end(),[](int i){ if(i%2==0){ std::cout<<i<<std::endl;}}); // print only the odd numbers
+}
+////
+cout<< [](int x, int y){ retunrn x+7;}(3,4)<<std::endl;
+// we can pass in the lambda parameters like this.
+
+79. #include <functional>
+std::function is a wrapper that lets you store a callable object. callable object is anything we can call like lambdas, functors, normal fucntions
+void Print(int x){
+    std::cout<<x<<std::endl;
+}
+int main(){
+    std::function<void(int)> normalFunc= Print; // assigned to function- the type inside the <> is similar to function ptrs without ptrName and*
+    normalFunc(34);//just like function ptrs we can all them like this
+
+    std::function<void(int,int)> lambdaFunc= [](int x, int y){ std::cout<<x+y<<std::endl;}// assigned to lambda
+    lambdaFunc(4,5);
+
+    struct Functor{ //functor
+        void operator()(int x){
+            std::cout<<x<<std::endl;
+        }
+    };
+    Functor functorInstance; //instance of functor
+    std::function<void(int)> func= functorInstance;
+    func(45);
+
+}
+void FunctionthatAcceptsSTDFucntion( std::function< void(int)> func){
+    // this function will accept any callable with the void return type and int paramter.
+}
+std::function is slower than callinf functions natively. so dont overuse it.
+
+
+
+80. BIt field- can define class members witha  an explicit bit size
+struct S{
+unsigned int b: 3; // 3 bits member -can addd values from 0 to 7 only
+unsigned int:0;// unnamed bitfield of size 0 breaks up packing- this causes a new byte to begin here. so there willl be 5 unused bits here
+char c :7 =12;
+int e: 4 {15}; //4 bits member 
+};
+S s={7,14,5};
+if we increment s.b by 1, result willl be 0 as it can only store values from 0-7
+
+usually adjacent bit  fields are packed together. but padding is there and will be rounded off to the highest byte numberr- can check with sizeof.
+to force to start  a new byte- use a UNNAMED bitfield with 0 size
+
+As the bit fields do not necessarily start at beggining of a byte, we cant takee the address of it. so pointers an non const refferences are impossible. 
+const reffferences are posible- even herre a correct size copy is created and then refference is obund.
+
+80.mutable- allows changing member variables inside member functions defined as const
+
+class Base{
+
+    public:
+        int a;
+        mutable int b;// can be changed inside const fucntions despite
+        mutable std::mutex mutLock;// MARK MUTEXES AS MUTABLE (M&M RULE)
+        //beacuse mutexes are going to change states
+
+        void changeA() const{ //although we declaare no changes can be made to member cvvariable we can due to mutable
+            b=344;
+        }
+
+        int get() const{// lock even the read functions 
+            std::lock_guard<std::mutex> lg(mutLock);// mutex state will change so mark it as mutable(if inside const func)
+            return b;
+        }
+        int inc(){
+            std::lock_guard<std::mutex> lg(mutLock);
+            ++b;
+        }
+};
+int main(){// IMPORTANT
+    const Base baseObj;// ALTHOUGH OBJECT IS DEFINED AS CONSTANT OBJECT
+    baseObj.change();// THIS FUNCTON MODIFIES THE MEMBER VARIABLES OF A CONST OBJECT, BUT THE CHANGED ONES ARE MARKED AS MUTABLE SO ITS ALLOWED
+    return 0;
+}
+
+mutable is also used in lambdas
+int x=4;
+auto f=[=]() mutable {// = sign means by VALUE. BUT although its by value without mutable we cant change x.
+ x++;// if not defined as lambda gives:  error by- value capture cannot be modifed in a non mutable lambda
+ x=20;//error
+}
+x will still be 4 outside
+
+80. #define PI=3.41412 // we dont know if its float or double or anything
+constexpr double PI=3.143424// this is better-- type safe
+
+__LINE__ and __FILE__ can be used to ouput the code line and file name
+
+81. In defivedd class HEADER a include "Base.h"
+82. curuosly recurring template pattern/static polymorphism/simulated polymorphism
+
+its a method to achieve polymorphism with templates. here the runtime costs of dynamic dispatch and memory costs of vtable arent there
+base class in templatized and derived class is inherited from base class with template parameter as base class
+inside the base class no virtual functions. a function is present that static cast a pointer to the type of derived class and calls the required correct function.
+this is an example of template metaprogramming
+
+Bo Quian video- static polymorphism for refference
+
+83.
+	 friend vectx operator-(const vectx&,const vectx&);// for fun
+	friend Matrix operator*(double, Matrix);
+	friend Matrix operator*(Matrix, double);
+when on the left side isnt a class use friend function. since need to reach private or protected
+
+84. 2d dynamic array
+   int **ptr;// pointer to a pointer
+ptr= new int*[size];// array of pointers that point to arrays
+
+    for(int i=0;i<row;i++){// allocate memory for each
+        ptr[i]=new int[col];// array
+    }
+
+     for(int i=0;i<row;i++){// delete each
+        delete[] ptr[i]; //see syntax
+    }  
+
+   delete[] ptr;// delete the main ptr
+   ptr=nullptr;
+
+85.
+    std::string str1,str2;
+    std::cout<<"enter string 1: ";
+    getline(std::cin,str1);
+
+    std::cout<<str1+str2<<std::endl;//string concatenation
+    str1.append(str2); //=  str1+=str2;
+str1.insert(4,"abc"); //insert abc starting at 4th index
+    str1.erase(4,3); //delete 3 characters starting from 4th index.
+ //string.erase(3) will erase all from 3
+//to erase the last character
+    str1.erase(str1.length()-1); 
+    str1.pop_back(); //same
+
+    //str.replace(start,number of elmentd to replace,"what to replace with");
+    str1.replace(2,2,"njend");
+
+    std::string str3="what the hell bro"
+   std::string str4="hell";
+
+    str3.replace(str3.find(str4),str4.length(),"****");
+
+    //to get a substring
+    std::cout<<str1.substr(3,4)<<std::endl;// start index and number of indexes
+
+87.   do{
+        cout<<"Ip power"<<endl;
+        cin>>pow;
+        if((pow<0))
+        {
+            cout<<"Invalid"<<endl;
+        }
+
+
+    }
+    while((pow<0));
+
+
+ switch (c){
+        case 1:
+            cout<<"Choose E\n";
+            break;
+        case 2:
+            cout<<"Choose S\n";
+            break;          
+        default : //will be exxecuted if nothing matches
+                cout<<"Choose T\n";
+                break;   
+        }
+
+88.
+friend std::ostream& operator<<(std::ostream& os, const vectx& obj);// need to make it a friend fucntion because fucntion to access the private vairables
+    friend std::istream& operator>>(std::istream& is,  vectx& obj); //no const vectx as vectx obj is modified
+
+ std::ostream& operator<<(std::ostream& os, const vectx& obj)// need to make it a friend fucntion to access the private vairables
+ {
+    os<<obj.x<<'\t'<<obj.y;
+    return os;
+ }
+ std::istream& operator>>(std::istream& is,  vectx& obj){
+    is>>obj.x;
+    is>>obj.y;
+    return is;
+ }
+
+89. use std::vector<int> v(3,1) to create vector of 3 and fill with 1. v(3) will create vector of size 3 and fill by default 0
+
+ v.reserve(10);//avoids realcoating of the heap which is expensive
+
+  // Clear the vector
+  v.clear();
+
+  // Check if the vector is empty again
+  if (v.empty())
+
+89.1  Use emplace in maps.
+std::unordered_map<char,int> mp_charkey;
+    std::pair<char,int> p1={'f',74};
+    mp_charkey.insert(p1);
+    mp_charkey.insert(std::pair<char,int>('r',90)); 
+    mp_charkey.insert({'x',54});//THIS ALSO WORKS THOUGH- USE {} ALWAYS
+    mp_charkey.emplace('z',321);//DONT USE {} IN EMPLACE- THIS IS BETTERRRRRRRRR
+
+90. 
+
+file read//////
+std::ifstream fileR(fname);
+   // std::ifstream fileR("helo.txt");  //creating a input file stream object
+   
+
+   if(fileR.is_open()){
+    std::cout<<"file open"<<std::endl;
+   }
+    std::string inputStr; //stores each string(seperate by whitespace or endl) from  the file
+    std::vector<std::string> names;
+    while(fileR>>inputStr){   //like cin.. here it will return true untill the end is reached
+
+        names.push_back(inputStr);
+    }
+    for(std::string n: names){   
+
+        std::cout<<n<<std::endl;
+    } 
+
+    std::string line; 
+    getline(fileR,line); // gets the sentences
+    std::cout<<line<<std::endl;//already at the end of the file. so wont print anything
+
+
+
+
+    fileR.close();
+
+
+
+file write////
+
+    std::ofstream fileW(fname, std::ios::app);
+   // std::ofstream fileW("helo.txt", std::ios::app);  //creating a output file stream object
+   // fileW.open("helo.txt"); //
+
+   if(fileW.is_open()){
+    std::cout<<"file open"<<std::endl;
+   }
+    fileW<<"hey anipa"; //Like std::cout //
+    //LIKE WRITING TO THE COSOLE ,WRITING TO FILE <<
+
+    std::vector<std::string> names;
+    names={"anupa","sattharas","bjhsg"};
+    names.push_back("jnfdjvn");
+
+    for(cosnt std::string& n: names){
+        fileW<<n<<std::endl;
+    }
+
+
+    fileW.close();
+
+
+91.  Bubble sort- 0 n^2
+
+ for (size_t i=0; i<sz;i++)//i will reduce the unsorted array in each iteration
+    {
+        
+        for (size_t j=0; j<(sz-i-1);j++){        //SIZE-i-1 as we check j+1
+		swap if bigger
+
+92. selection sort 0 n^2 
+//FINDS THE smallest TERM IN THE RIGHT SUBLIST AND SWAPS WITH THE LEFT MOST UNSORTED ELEMNT
+
+void selectionSort( int arr[], int sz)
+{
+    for (int i=0; i<sz;i++)
+    {
+        int minIndx=i;// stores the index of the smallest value
+        for(int j=i+1;j<sz;j++){//search from i+1 th element
+            if(arr[minIndx]>arr[j]){ //just change the sign for decending order
+                minIndx=j;//get the min value in the right side 
+            }
+
+        }
+        
+        if(minIndx!=i){ //find the smallest term on the right and swap with the leftmost unsorted element 
+            int temp=arr[i];
+            arr[i]=arr[minIndx];
+            arr[minIndx]=temp;
+        }
+    }
+}
+
+93. Insertion sort-0 n^2 in practice more efficent than the other two o^2 ones,
+
+
+//ALGORITHM
+
+//1. Pick and element. start from the 2nd element index=1
+//2. Shift right all elments thats at the (left of the picked element) that is greater than the picked element 
+//3. INSERT the picked element
+//4, continue till the end
+
+void insertionSort( int arr[], int sz)
+{
+
+    int key;//value at the picked element
+    int j;//reverse starting point of the left subarry
+    for (int i=1; i<sz;i++)//start from index 1(2nd element)
+    {
+        key=arr[i]; //picked element
+        j=i-1;//reverse starting point of the left side array 
+
+        while(j>=0 && key<arr[j]){        //CHANGE SYMBOL FOR DECENDING ORDER
+            arr[j+1]=arr[j];  //shifting all elements in left side greater than the picked(key) element to the right
+            j--;                  //decrementing to check from right to left   from pickedd point     
+
+        }
+        arr[j+1]=key; //INSERTING the picked(key) at the right place
+        
+    }
+}
+
+
+//SELECTION SORT TIME COMPLEXITY IS O(n^2)- INEFFICENT
+//SPACE COMPLEXITY IS 0(1)
+//INPLACE COMPARISON SORT - DOESNT USE EXTRA SPACE FOR MANIPULATING THE INPUT
+
+//FINDS THE LOWEST/HIGHEST TERM IN THE RIGHT SUBLIST AND SWAPS WITH THE LEFT MOST UNSORTED ELEMNT
+
+
+void selectionSort( int arr[], int sz)
+{
+    for (int i=0; i<sz;i++)
+    {
+        int minIndx=i;// stores the index of the smallest value
+        for(int j=i+1;j<sz;j++){//search from i+1 th element
+            if(arr[minIndx]>arr[j]){ //just change the sign for decending order
+                minIndx=j;//get the min value in the right side 
+            }
+
+        }
+        
+        if(minIndx!=i){ //find the smallest term on the right and swap with the leftmost unsorted element 
+            int temp=arr[i];
+            arr[i]=arr[minIndx];
+            arr[minIndx]=temp;
+        }
+    }
+}
+
+
+
+
+94. merge sort nlogn and space 0(n)
+
+
+//MERGE SORT TIME COMPLEXITY IS O(nlogn)- ONE OF THE MOST EFFICENCNT
+//divide and conquor- divides input arrray to 2 halves. 
+//calls itself for the two halves recursively (TILL 1 element)  and then merges the sorted halves
+//SPACE COMPLEXITY IS 0(N)- need the temp array of n size
+
+//NO NEED TO MAKE THE TEMP ARR THE SIZE OF N. WE CAN JJUST MAKE IT SIZE OF
+//R-L+1.  THEN K WILL START FROM 0 NOT L. BUT WHEN COPYING BACK LETS ADD L to make sure its added to the correct place of the original arr
+
+//ALGORITHM-
+
+//1. .find middle point- m= (r+l)/ 2
+//2. call mergesort(arr, l,m) //split left side
+//3.mergesort(arr,m+1,r)// split right side
+//4. merge(arr,l,m,r)
+
+void merge(int arr[], int l, int m, int r){
+
+    int *temp=new int[r-l+1]; //array created
+//USED a dynamic array because cant pass in variable to decide the size of the temp array. 
+    int i=l; //like the index of the split left array
+    int j=m+1;//like the index of the split right array
+    int k=0; // index of the temp array
+    
+
+    while(i<=m && j<=r)//loop till either left or right array completes
+    {
+        if(arr[i]<=arr[j]){//CHANGE SIGN HERE FOR DECENDING ORDER
+            temp[k]=arr[i];
+            i++;// advance index on the left split array
+            k++; //move to next index on the temp array
+        }
+        else{
+            temp[k]=arr[j];
+            j++;// advance index on the right split array
+            k++;//move to next index on the temp array
+        }
+
+    }
+
+    while(i<=m){// till the left split array completes
+        temp[k]=arr[i];
+        k++;
+        i++;
+    }
+    while(j<=r){// till the right split array completes
+        temp[k]=arr[j];
+        k++;
+        j++;
+
+    }
+    for(int p=0;p<k;p++){ //copy to array. here its p<k not p<=k because k++ is done above.k=size
+
+        arr[p+l]=temp[p];// copied to p+L as we need to copy to the correct place of the original array.
+    }
+    delete []temp;///delete temp
+
+
+}
+
+void mergeSort( int arr[], int l, int r)
+{
+    if(l<r){ //do nothng when l=r. only single element remaining
+
+        int m=(l+r)/2; //mid point
+        mergeSort(arr,l,m);//merge sort the left split array
+        mergeSort(arr,m+1,r);//merge sort the right split array
+        merge(arr,l,m,r); //merge  
+    }
+}
+
+95.
+
+//QUICK SORT TIME COMPLEXITY IS O(nlogn)- ONE OF THE MOST EFFICENCNT- 
+// however this may vary choosing the pivot pt is important, if badly chosen will make TC on^2.
+// in merge sort its always nlogn- more stable.
+//divide and conquor- uses recursion
+//inplace sorting algorithm- no auxillary array(temp[]) is needed like in mergesort(arr,sz,s,e);
+
+//so SPACE COMPLEXITY IS 0(logN) but in worst case of bad pivot choosing then its o(n)
+
+//different ways to select the pivot, first, last or random. median of first middle and last element is also good. helps ensure the pivot is rougly in the middle
+//here picking last. pivot selection is important/.if largesst or smallest choosen. it causes recursive tree to have 0 or 1 eleemnt on one side and the array on the other side. like more linear type. 
+//causing o TC n^2 and SC on 
+
+//ALGORITHM-
+
+//1. Pivot point is choosen- last term 
+//2. Find partition index- sofrting actually happens inside the partition functionn
+//3. qick sort first half //split left side
+//4.qick sort second half// split right side
+
+
+int Partition(int arr[], int sz, int s,int e){
+
+    int pivot=arr[e]; //select the last element as pivot
+    int pIndex=s; //go from the start of the sub array beonging to this function
+    //pIndex tracks where the values smaller than pivot val ends and larger begins to insert pivot later
+    for (int i=s;i<e;i++){ //i<e as we need to STOP before the pivot pt
+        if(arr[i]<=pivot){//check if each smaller than or equal to pivot value. pivot is like a REFFERENCE to swap
+            
+            int temp=arr[i]; //swap smaller than pivot values with the value at pindex and advance pindex to the right
+            arr[i]=arr[pIndex];
+            arr[pIndex]=temp;
+            pIndex++;
+        }
+    }
+    //now insert the pivot element where pIndex stopped.. 
+    //where the swapping stopped...where all to the left are smaller than pivot
+    arr[e]=arr[pIndex]; //swap pivot with one at pIndex
+    arr[pIndex]=pivot;
+    return pIndex; //output the pivot index
+}
+
+
+void quickSort( int arr[], int sz, int s, int e)
+{
+    if(s<e){ 
+
+        int p=Partition(arr,sz,s,e);// returns the pivot point. actual sorting happens here
+        quickSort(arr,sz,s,(p-1));// for the left of the pivot pt
+        quickSort(arr,sz,(p+1),e); //for the right of the pivot pt
+        
+    }
+    
+}
+
+
+96. shell sort
+
+//inplace COMPARISON TYPE sort like  , isnsertion
+//variatiom of bubble or insertion sort
+//this method avoids large shifts. which may occur in insertion sort 
+//if the small value is to the far END it needs to be moved to the far left
+//here it is faster
+//SHELL SORT IS MORE EFFICIENT WHEN 
+//1. WHEN SMALL VALUES ARE TOWARDS THE END
+//2. ARRAY IS LARGE
+
+//EFFICIENCY DEPENDS ON HOW WE SETUp THE GAP/INTERVAL= h
+//here we choose h=n/2
+
+//TIME COMPLEXITY- worst case o(n^2), best case nlogn, avg case nlog(n^2)???
+//SPACE COMPLEXITY - 0(1) inplace comparison type sort
+
+//ALGORITHM
+//1. INITIALIZE THE GAP. 
+//2. compare elemennts placed at this gap
+//3. of element is larger , perform swap(bubble sort) or shift (insertion sort)
+//IF SWAP IS DONE THEN SHOULD BE CHECKED THE OTHER WAY AS WELL.
+//4. repeat  here gap h=n/2.. reduces every itertion and stops at 0
+
+void shellSort(int arr[],int sz){
+    
+    for(int gap=sz/2;gap>0;gap/=2){ //reduces the gap size in each iteration
+
+        for (int j=gap;j<sz;j++){
+
+            int temp=arr[j];//stores the value temporarily for swaping
+            int i;
+            for(i=j;(i>=gap) && (arr[i-gap])>temp;i-=gap){ //checks both sides if swap is done
+                arr[i]=arr[i-gap];
+            }
+            arr[i]=temp;
+        }
+  
+    }
+
+}
+
+97.  COUNTING SORT
+
+
+//ONLY FOR INTEGERS- INDEX IS USED .. NO NEGATIVE VALIUES( workaround- can add the min and make the range start from 0 and do, then substaract)
+//counting SORT TIME COMPLEXITY IS O(n+k)- LINEAR K= RANGE OF INPUT  -  - 0 to max val
+//EXAMPLE OF RANGE 0 TO 9 IS 10. (USE MAX+1) AS THE R FOR THE FUNCTION INPUT
+
+
+//so SPACE COMPLEXITY IS 0(n+k)-LINEAR K= RANGE OF INPUT
+//USE WHEN RANGE-K IS SMALLER THAN THE NUMBER OF ELEMENTS-N. OR ELSE TIME COMPLEXITY IS HIGH BECAUSE OF HHIGH K
+
+//USE WHEN RANGE IS SMALL - K IS SMALL. OR ELSE LARGE ARRAyS NEEDS TO BE TRAVERSED
+
+//THIS IS NON COMPARISON TYPE SORT.
+//THIS HAS MUCH LOWER time COMPLEXITY COMPARED TO COMAPRISON TYPE SORT  LIKE MERGE OR QUICK SORT
+
+//ALGORITHM-
+
+//Range k is the range from 0 to MAXIMUM value. (not minnimum to max)
+
+//1. Create an ouput array the size of the ip aray
+//2. Create a count array the size of the range and i initilaize to 0
+//3. Count each element in the ip array and place in count array
+//4.Makde the count arry cumilative// TO GET DECSENDING ORDER GET THE CUMULATIVE IN THE OPPOSITE DIRECTION
+//5. Use arithemtic to find position in the op array using values in cumilatuve count array
+//6. trasnsfer to op array
+
+
+void countingSort( int input_array[], int sz, int r)
+{
+
+
+
+
+    int *output_array=new int[sz];// op array of sz size
+    int *count_array=new int[r];// count array of range size
+    
+    for(int i=0; i<r; i++){  //intialize all elements to 0
+        count_array[i]=0;  //can use int *count_array=new int[r]{0};
+    }
+
+    for(int i=0; i<sz; i++){  //the indexs of the count array corresponds to unique elements in the ip array
+        ++count_array[input_array[i]];  //everytime theres a unique element that index in count array is incremented
+    }
+    
+//NO NEED TO MAKE IT CUMULATIVE TO SORT NUMBERS.(NEED IT TO SORT OTHERS LU- not sure), CAN JUST PRINT THE COUNT_ARRAY UNTILL THE VALUE GOES TO ZERO THEN MOVE TO TTHE NEXT INDEX
+//always make the count array cumulative
+    for(int i=1; i<r; i++){  //start from 1(not 0) then add the prev
+        count_array[i]=count_array[i]+count_array[i-1];  
+    }
+
+/*     //FOR DESCENDING ORDER- make the count array cumulative in the opposite direction
+    for(int i=r-2; i>=0; i--){  //start from 1(not 0) then add the prev
+        count_array[i]=count_array[i]+count_array[i+1];  
+    } */
+
+//mapping-find position of the elements on the op array using values in the cumilative count array
+    for(int i=sz-1; i>=0; i--){  //stars from end backwards
+        output_array[--count_array[input_array[i]]]=input_array[i];  //this decrements value stored in count array by 1 and saves it
+    }
+    //the position of terms in the ip array to be added to the op array can be found using
+    //  cumilative count of the element  -1 IS WRONG as it wont decrement the value stored. -- WILL REDUCE count_array[input_array[i]] IN EVERY ITERATION, SO 
+
+
+    for(int x=0;x<sz;x++){ //copy from op array to input array
+        input_array[x]=output_array[x];
+    }
+    delete []output_array;
+    delete []count_array;
+
+    //1. to find r - max value
+
+/*        int r=input_array[0]; //max finding algorithm
+    for(int i=0;i<sz;i++){
+        if(r<arry[i]){
+            r=arry[i]; }
+    }
+    r=r+1;//use max+1 as range as  the max also needs to be included in the count array. */
+
+    //IF THERE ARE NEGATIVE VALUES CAN NORMALIZE??? MY WAY
+    //2. Find the smallest value. check if its negative.
+    //if negative. then add the positive value of min to all elements.
+    //do normal count sort after finding the new range
+    //then when copying substract the min
+    //worked for me
+}
+
+
+100. void printList(const std::list<int>& ls){// called as const
+    for(std::list<int>::iterator i=ls.begin();i!=ls.end();i++){// GIVES an error as it will create a const iterator
+        std::cout<<*i<<"\t";// 
+
+    }
+}
+
+
+void printList(const std::list<int>& ls){// USE CONST_ITERATOR WHEN PASSED IN AS CONST OR USE auto. use const_iterator to go over const objects.
+    for(std::list<int>::const_iterator i=ls.begin();i!=ls.end();i++){
+        std::cout<<*i<<"\t";
+
+    }
+}
+ITERATOR- can be used to iterate over a collection of elements on a data structure. iterator, reverse_iterator, const_iterator, reverse_const_iteratr
+iterators can be derefferenced with *. We can use -> to derefference as well. 
+
+REMOVING ELEMENTS WHILE ITERATING.
+You cannot directly delete the element from the list while iterating because of doing you get Runtime Error because the iterator is now pointing to NULL and the address of the next element 
+of the list gets lost and you cannot access the list anymore.
+
+iterator = list_name.erase(iterator); // IMPORTANT -this assigns the iterator to the next element after deletion.
+
+IMPORTANT THINGS TO NOTE WHEN DELETING ELEMENTS.
+1. if its a for loop with itr++, since this now points to the next element. it will be double ++. will skip over one element
+so use a itr--; to correct for this.
+ for (auto itr = li.begin(); itr != li.end(); itr++) {
+        if (*itr % 3 == 0) {
+            itr = li.erase(it);// deletes the element and assigns the next element to the iterator
+            itr--;// avoids the double ++ and skipping of the element
+        }
+    }
+
+2. In a while loop with itr++ at the end will cause the same issue. can use continue; before the itr++ to avoid this
+ while (itr != li.end()) {
+        if (*itr % 3 == 0) {
+            itr = li.erase(itr);// deletes the element and assigns the next element to the iterator
+            continue;//avoids the double ++ and skipping of the element
+        }
+        itr++;// when an element is erased this is not called due to the continue statement
+    }
+3. Vector - every iterator after the point of deleting is invalidated. use the trick above to correct for it.
+deque- all iterators are invaldated unless erased from the front or back
+
+4. In Set, map ,list the iterators are VALID only the deleted ones are INVALIDATED.
+
+IMPORTANT THINGS TO NOTE WHEN INSERTING ELEMENTS
+
+1. When adding elements- 
+Vectors- all iterator before the point of insertion are unaffected. all others invalidated. BUT IF THIS ADDITION CAUSES RESIZING THEN ALL ARE INVALLIDATED as the iterators will point to memory that doesnt exist.
+deque- all invalidated unless added to the front or back
+2. list, map, set - all iterators are UNAFFECTED
+
+
+100. Binary and bitwise operators. in c++ can use 0b10101001 to write binary and 0xff to write hexadecimal
+<< bit shift left, >> bit shift right, 
+unsigned int a =5;// 0000 0101
+a=a<<1; // bitshift left by 1. 0000  
+now a is 10 ( this is like multiplying by 2 to the power bitshift value)
+a>>=1; // bitshift right by 1. 0000 0101 (htis is like dividing by 2 to the power bitshift value). the compiler converts such calculations to bitshifts to make it fast so we dot need to do it.
+now a is 5;
+a>>1; // this will cause the 1 to drop off. 0000 0010. here also its like being divided but it should be 2.5. but its like truncated to 2. essentially integer division
+now a= 2
+
+this works for unsigned integers. when its negative signed it is different. 
+
+bitwise &- this is also called bit mask because if we can use it to selectively mask bits or groups of bits.
+if im interested in known the state of the 3rd bit we can use & 0000 0100  which will give us a 0000 0 100 or 0000 0000 where we can isolate the status of that bit alone
+unsigned int a=5, b=5;
+a=a&b; 0000 0101 & 0000 0101 =0000 0101
+
+ bitwise |
+ a=a&b; 0000 0101 |0000 0101 =0000 0101
+
+bitwise xor ^- can b used for bit flipping. to flip the 3rd bit 0000 0101 ^ 0000 0100= 0000 0001
+
+a=a^b; 0000 0101 |0000 0101 =0000 0101
+   
+bitwise ~
+a=~a; ~0000 0101 =1111 1010
+
+
+101.
+        //8. reverse a list
+
+
+        void reverseList(){// reverse the list
+            if(head==NULL){
+                std::cout<<"No nodes on the singly LL"<<std::endl;
+            }
+            else{
+               
+                Node<T> *prev=NULL;// pointer ot the previous node
+                Node<T> *curr=head;//pointer to the current nodenode
+                Node<T> *temp;//pointer to the next node of the current node
+                while(curr!=NULL){ //as soon as the last node NULL is reached looop breaks
+                    temp=curr->next;//stores the address to the next pointer. or else its lost in the next step
+                    curr->next=prev;//point to the previous to reverse
+                    prev=curr;//prev->next is WRONGGGG. As prev->next is now reffering back
+                    curr=temp;//advance to the next node                      
+                }
+                //head->next=NULL;//no need now- make head the last node. assign null to the next 
+                head=prev;//assign the new head
+                std::cout<<"Reversed"<<std::endl;
+            }
+
+        }
+
+
+    Node<T>* reverseListRecursivey(Node<T> *n){// reverse the list
+            if(n==NULL ){ //base case. terminate immediateely if input is null o
+                return n;
+                //first trasverse to the last node and make it head
+            }
+            if(n->next==NULL){//exit condition  additonal base case. if n->next is null. means end of list. so assign head to the curretn node
+                head=n;//make the new head 
+                return n;
+            }
+
+            Node<T> *temp=reverseListRecursivey(n->next);//essentially returns the input node (next node here) (also sets new head at the last node)
+            temp->next=n;// make the next of the (next node) point to current node. REVERSING
+            n->next=NULL;//this will be called several times and overwritten. untill last time where the first node's next will be assigned null
+            return n;
+
+        }
+    void selectionsort(){//hard to use buuble sort because we need to keep track of the nodes to reduce the sorted. 
+            for(Node<T> *i=head; i->next!=NULL;i=i->next){//stops at the one before the last
+                //THIS IS NOT CORECT SELECTION SORT- find minmum on the right hand side and swap is selection sort- change this?
+                for(Node<T> *j=i; j!=NULL;j=j->next){//stops at the last
+                    if((i->data)>(j->data)){//swap values
+                        T temp=i->data;
+                        i->data=j->data;
+                        j->data=temp;
+                    }
+                }          
+            }
+        }
+
+
+        Node<T> *mergeTwoSortedLL(Node<T> *A, Node<T> *B){//at the end will return  the head node of the new merged list(smallest of the two nodes)
+            if(A==NULL){ //base cases- if A is empty return B
+                return B;
+            }
+            if(B==NULL){ //base cases- if B is empty return A
+                return A;
+            }
+
+            if((A->data)<(B->data)){
+                A->next=mergeTwoSortedLL(A->next,B);//makinng problem space smaller
+                return A;//returns the smaller one
+
+            }
+            else{
+                B->next=mergeTwoSortedLL(A,B->next);//makinng problem space smaller
+                return B;//returns the smaller one
+            }
+
+        }
+
+
+
+
+
+110.
+
+
+        void InvertBT(TreeNode *n){
+
+            if(n==NULL){
+                return;
+            }
+            InvertBT(n->left);// first move to the bottom then start doing the swaps
+            InvertBT(n->right);
+            TreeNode *temp= n->left;
+            n->left=n->right;
+            n->right=temp;
+
+        } 
+
+120. gtest- 
+test fixtures
+type paramterized tests
+value parametrized test
+#include "gtest/gtest.h"
+
+googletest.h
+
+
+
+
+#include "gtest/gtest.h"
+namespace {
+
+// Step 2. Use the TEST macro to define your tests.
+//
+// TEST has two parameters: the test case name and the test name.
+// After using the macro, you should define your test logic between a
+// pair of braces.  You can use a bunch of macros to indicate the
+// success or failure of a test.  EXPECT_TRUE and EXPECT_EQ are
+// examples of such macros.  For a complete list, see gtest.h.
+//
+// <TechnicalDetails>
+//
+// In Google Test, tests are grouped into test cases.  This is how we
+// keep test code organized.  You should put logically related tests
+// into the same test case.
+//
+// The test case name and the test name should both be valid C++
+// identifiers.  And you should not use underscore (_) in the names.
+//
+// Google Test guarantees that each test you define is run exactly
+// once, but it makes no guarantee on the order the tests are
+// executed.  Therefore, you should write your tests in such a way
+// that their results don't depend on their order.
+//
+// </TechnicalDetails>
+
+// Tests Factorial().
+
+// Tests factorial of negative numbers.
+TEST(FactorialTest, Negative) {
+  // This test is named "Negative", and belongs to the "FactorialTest"
+  // test case.
+  EXPECT_EQ(1, Factorial(-5));
+  EXPECT_EQ(1, Factorial(-1));
+  EXPECT_GT(Factorial(-10), 0);
+
+  // <TechnicalDetails>
+  //
+  // EXPECT_EQ(expected, actual) is the same as
+  //
+  //   EXPECT_TRUE((expected) == (actual))
+  //
+  // except that it will print both the expected value and the actual
+  // value when the assertion fails.  This is very helpful for
+  // debugging.  Therefore in this case EXPECT_EQ is preferred.
+  //
+  // On the other hand, EXPECT_TRUE accepts any Boolean expression,
+  // and is thus more general.
+  //
+  // </TechnicalDetails>
+}
+
+// Tests factorial of 0.
+TEST(FactorialTest, Zero) { EXPECT_EQ(1, Factorial(0)); }
+
+// Tests factorial of positive numbers.
+TEST(FactorialTest, Positive) {
+  EXPECT_EQ(1, Factorial(1));
+  EXPECT_EQ(2, Factorial(2));
+  EXPECT_EQ(6, Factorial(3));
+  EXPECT_EQ(40320, Factorial(8));
+}
+
+// Tests IsPrime()
+
+// Tests negative input.
+TEST(IsPrimeTest, Negative) {
+  // This test belongs to the IsPrimeTest test case.
+
+  EXPECT_FALSE(IsPrime(-1));
+  EXPECT_FALSE(IsPrime(-2));
+  EXPECT_FALSE(IsPrime(INT_MIN));
+}
+
+// Tests some trivial cases.
+TEST(IsPrimeTest, Trivial) {
+  EXPECT_FALSE(IsPrime(0));
+  EXPECT_FALSE(IsPrime(1));
+  EXPECT_TRUE(IsPrime(2));
+  EXPECT_TRUE(IsPrime(3));
+}
+
+// Tests positive input.
+TEST(IsPrimeTest, Positive) {
+  EXPECT_FALSE(IsPrime(4));
+  EXPECT_TRUE(IsPrime(5));
+  EXPECT_FALSE(IsPrime(6));
+  EXPECT_TRUE(IsPrime(23));
+}
+}  // namespace
+
+// Step 3. Call RUN_ALL_TESTS() in main().
+//
+// We do this by linking in src/gtest_main.cc file, which consists of
+// a main() function which calls RUN_ALL_TESTS() for us.
+//
+// This runs all the tests you've defined, prints the result, and
+// returns 0 if successful, or 1 otherwise.
+//
+// Did you notice that we didn't register the tests?  The
+// RUN_ALL_TESTS() macro magically knows about all the tests we
+// defined.  Isn't this convenient?

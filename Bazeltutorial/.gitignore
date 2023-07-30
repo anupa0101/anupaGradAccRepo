@@ -1,0 +1,6 @@
+##
+# gitignore file for bazel projects
+##
+
+# Ignore all generated bazel symlinks.
+/bazel-*

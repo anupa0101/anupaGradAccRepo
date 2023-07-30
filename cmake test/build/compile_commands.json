@@ -1,0 +1,12 @@
+[
+{
+  "directory": "E:/C++course/cmake test/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/anupa.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\anupa.dir\\main.cpp.obj -c \"E:\\C++course\\cmake test\\main.cpp\"",
+  "file": "E:/C++course/cmake test/main.cpp"
+},
+{
+  "directory": "E:/C++course/cmake test/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/anupa.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\anupa.dir\\Base.cpp.obj -c \"E:\\C++course\\cmake test\\Base.cpp\"",
+  "file": "E:/C++course/cmake test/Base.cpp"
+}
+]

@@ -1,0 +1,239 @@
+You can use -Wall -Wextra to make the compiler give most of these warnings as well.
+
+not using these toools may not show us proper errors, will goto some crazy internal file and show us a weird scary error.
+
+
+Dynamcic testing tools 
+1. ASan -fsanitize=address
+2. TSan -fsanitize=thread   - just detects data races 
+3. MSan - fsanitize=memory  -used to detect uninitialized memory reads- ex int arr[10]  , trting to read arr[2] is a uninitialized memory read
+the values contained are garbage and wont throw an error. hard to manually detect.
+4. UndefinedBehaviorSanitizer- UBSan-  -fsanitize=undefined  - detects null ptrs, arrry out of bounds, divide by zero, 
+signed intger overlfow, out of bounds bitwise shifts, out-of-range casts to, from, or between floating-point types and other types.
+
+
+
+ASan can be used to detect memory misuse. its acually a invalid address reporter
+Enable this for debugging only - higher processign time and memory usage
+ASAN does not show uninitialized memory reads-  use memory sanitizer for it.
+
+ex: dereffferencing a deleted ptr
+ex: forgeting to delete heap memory
+
+bugs it can detect- underfined behaviours- may not always throw errors
+
+1. Heap use after free- Use after deleting- after deallocating memory- dangling pointer
+2. Heap buffer overflow- refference something beyond the heap allocation
+ ex: int* ptr= new int;  *(ptr+1)=3; // derefferencing something beyond the heap allocation
+3. Stack buffer overflow- refference something beyond the heap allocation
+4. Global buffer overflow- same like stack buffer over flow but for global variable
+5. Use after return
+6. Use afer out of scope ex: derefferencing a pointer to a local stack variable outside scope
+7. Initialization order bugs 
+8. MEMORY LEAKS
+9. double delete
+
+use MSan to detect uninitialized memory reads. 
+
+USE THIS COMMAND TO USE ASAN-    -fsanitize=address  to use ASAN    -O0 to prevent optimizing  -g to get debugger info- file names and line numbers
+g++ -O0 -g -fno-omit-frame-pointer -fsanitize=address src/main/main_address_sanitize.cc
+
+For some bugs like stack or heap or global buffer overflow- shadow bytes map around the buggy address will be shown.
+red fa are redzones (posion)- accessin them is a bug. the exact byte accessed illegally will be shown by [fa].
+
+
+
+
+//-----------------------------------------------------------------------------
+volatile char *global_ptr;
+
+__attribute__((noinline)) void FunctionThatEscapesLocalObject() {
+  char local[100];
+  global_ptr = &local[0]; //A LOCAL VARIABLE PTR IS ASSIGNED TO A GLOBAL VARIABLE B THE FUCNTION- STACK USE AFTER RETURN
+}
+
+char global_array[10];
+
+//-----------------------------------------------------------------------------
+int main(int argc, char **argv) {
+  if (argc != 2) { //takes in command line arguments
+    std::cout << "Usage: main_address_sanitize <choice>" << std::endl;
+    return -1;
+  }
+
+  int choice = std::stoi(argv[1]); //converts command line arguments- string to int- here can type ./a.exe COMMAND LINE ARGUMEMENT Ex:./a.exe 2
+  std::cout << "choice: " << choice << std::endl;
+
+  switch (choice) {
+    case 0: {
+      //  SEGV on unknown address- asan shows this as SEGV and line number- segmentation error due to using memory not assigned to it. UBSan will also show this as undeifnedd behavior
+      char *ptr = nullptr;
+      *ptr = 5;// DEREFFERENCING A NULL PTR  AND ASSIGNING TO IT
+      break;
+    }
+
+    case 1: {
+      // SEGV on unknown address. - asan shows this as SEGV and line number- segmentation error due to using memory not assigned to it.
+      char *ptr = (char *)1;// casting to char* ptr
+      *ptr = 5;
+      break;
+    }
+
+    case 2: {
+      // SEGV on unknown address. - asan shows this as SEGV and line number- segmentation error due to using memory not assigned to it.
+      std::vector<char> v; // NOT INTITIALIZED YET. SIZE IS ZERO- NO HEAP MEMORY ALLOCATION YET
+      std::cout << v[100] << std::endl;// TRYING TO DEREFFERENCE HEAP MEMORY NOT ALLOCATEDD ==
+      break;
+    }
+
+    case 3: {
+      // Heap buffer overflow (Example 1).
+      std::vector<char> v(1);
+      std::cout << v[100] << std::endl;//TRYING TO DEREFFERNCE HEAP MEMORY NOT ASSIGNED TO THIS
+      break;
+    }
+
+    case 4: {
+      // Heap buffer overflow (Example 2).
+      char *array = new char[16];
+      array[16] = 1;  ////WRITING TO  HEAP MEMORY NOT ASSIGNED TO THIS- OUTSIDE THE HEAP ADDRESS \
+      break;
+    }
+
+    case 5: {
+      // Heap buffer overflow (Example 3).
+      char *ptr = new char;
+      *ptr = 'a';
+      std::cout << *(ptr + 1) << std::endl;//TRYING TO DEREFFERNCE HEAP MEMORY NOT ASSIGNED TO THIS
+      break;
+    }
+
+    case 6: {
+      // Heap use after free. 
+      char *p = new char;
+      delete p;
+      std::cout << *p << std::endl;//DEREFERENC AFTER DELETING
+    }
+
+    case 7: {
+      // Double-free.
+      char *p = new char;
+      delete p;//DOUBLE DELETE
+      delete p;
+      break;
+    }
+
+    case 8: {
+      // Stack buffer overflow.
+      char array[16];
+      array[20] = 1;  //ACCESSING STACK MEMORY NOT ASSIGNED TO THISe
+      break;
+    }
+
+    case 9: {
+      // stack-use-after-scope
+      volatile char *ptr = nullptr;
+      {
+        char x = 0;
+        ptr = &x;
+      }
+      *ptr = 5; //TRING TO DEREFFERENCE A PTR POINTING TO AN OUT OF SCOPE STACK MEMORY
+      break;
+    }
+    case 10: {
+      // stack-use-after-return
+      // Set this env variable before running:
+      // export ASAN_OPTIONS=detect_stack_use_after_return=1
+      FunctionThatEscapesLocalObject(); //RETURNS A PTR TO A STACK MEMORY OUT OF SCOPE
+      return global_ptr[0];//derfferencing local pointer illegal
+    }
+
+    case 11: {
+      // global-buffer-overflow
+      // char global_array[10]; // global variable.
+      global_array[11] = 1;  //TRYING TO WRITE TO GLOBAL MEMORY NOT ASSIGNED TO THIS
+      break;
+    }
+
+    case 12: {
+      // global-buffer-overflow
+      static char array[10];
+      array[11] = 1;  // /TRYING TO WRITE TO STATIC MEMORY NOT ASSIGNED TO THIS
+      break;
+    }
+
+    case 13: {
+      // Leak detection - WHEN FORGOTTEN TO DELETE
+      // Set this env variable before running:
+      // export ASAN_OPTIONS=detect_leaks=1
+      // Or with bazel:
+      /*
+        bazel run --config=asan //src/main:main_address_sanitize \
+        --run_under='export ASAN_OPTIONS=detect_leaks=1 &&' -- 13
+      */
+      char *p = new char;
+      *p = 10;
+      std::cout << "*p: " << *p << std::endl;
+      break;
+    }
+
+    default:
+      std::cout << "Error: Invalid choice value: " << choice << std::endl;
+  }
+
+  return 0;
+}
+
+######################################## UBSAN#########################################
+
+    case 1: {
+      int x = 1;
+      return x / (x - 1);  // undefined behavior- DIVIDE BY ZERO ERROR
+    }
+
+    case 2: {
+      int x = 10;
+      int arr[4] = {0, 1, 2, 3};
+      int a = arr[x];  // undefined behavior for -INDEXING OUT OF BOUND
+      std::cout << "a: " << a << std::endl;
+      break;
+    }
+
+    case 3: {
+      int *p = 0;// assigns null to the ptr
+      int a = *p;  // undefined behavior for- DEREFFERENCING A NULL PTR
+      std::cout << "a: " << a << std::endl;
+      break;
+    }
+
+    case 4: {
+      int num = -1;
+      unsigned int val =
+          1 << num;  // SHFITING BY A NEGATIVE NUMBER - undefined behavior
+      std::cout << "val: " << val << std::endl;
+      break;
+    }
+
+    case 5: {
+      int num = 32;  // or whatever number greater than 31
+      int val =
+          1 << num;  // the literal '1' is typed as a 32-bit integer - in this
+                     // case shifting by more than 31 bits is undefined behavior- BITWISE SHIFTING
+
+      std::cout << "val: " << val << std::endl;
+      break;
+    }
+
+    // Can't be detected by udef sanitizer :(
+    case 20: {
+      int a = 0;
+      int b = 0;
+      return &a < &b;  // undefined behavior
+    }
+
+    // Can't be detected by udef sanitizer :(
+    case 21: {
+      int arr[4] = {0, 1, 2, 3};
+      int i = 0;
+      arr[i] = i++;  // undefined behavior????????
+    }

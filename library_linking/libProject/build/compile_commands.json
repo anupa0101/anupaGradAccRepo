@@ -1,0 +1,7 @@
+[
+{
+  "directory": "E:/C++course/library_linking/libProject/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/libproject.dir/includes_CXX.rsp -g -o CMakeFiles\\libproject.dir\\src.cpp.obj -c E:\\C++course\\library_linking\\libProject\\src.cpp",
+  "file": "E:/C++course/library_linking/libProject/src.cpp"
+}
+]

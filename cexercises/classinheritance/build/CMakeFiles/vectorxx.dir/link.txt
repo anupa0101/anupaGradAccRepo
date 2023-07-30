@@ -1,0 +1,3 @@
+"C:\Program Files\CMake\bin\cmake.exe" -E rm -f CMakeFiles\vectorxx.dir/objects.a
+C:\msys64\mingw64\bin\ar.exe qc CMakeFiles\vectorxx.dir/objects.a @CMakeFiles\vectorxx.dir\objects1
+C:\msys64\mingw64\bin\g++.exe -g -Wl,--whole-archive CMakeFiles\vectorxx.dir/objects.a -Wl,--no-whole-archive -o vectorxx.exe -Wl,--out-implib,libvectorxx.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\vectorxx.dir\linkLibs.rsp

@@ -1,0 +1,640 @@
+
+
+/* 
+Gtest is a framework for unit testing. Gmock is a framework imitating the rest of your system during unit tests.
+
+GTest
+
+A test's fullname is the suitename.testname
+
+1. tests should be independant and repeatable - cant have tests that depend on other tests succeeding 
+2. group tests whe they share subroutines and data
+
+3. assertions- check if condition is true. result can be sucess, non fatal failure and fatal failure. at fatal faluire it aborts the current function
+
+ASSERT_EQ/EXPECT_EQ(---EXPECTED VALUE, ---ACTUAL VALUE)-- REMEMBER THISSS
+EXPECT_TRUE(CONDITION WITH BOOLEAN OUTPUT LILKE VALUE==3);
+EXPECT_NE(VA1,VAL2); // not equal check
+EXPECT_STREQ-  to compare strings use this
+EXPECT_LT-<, EXPECT_LE-<=, EXPECT_GT->, EXPECT_GE->=
+EXPECT_STREQ(c_style string, actual) ; for c style strings not for c++ style strings.
+ASSER_FLOAT_EQ(exp, act)// for float values, wont work if jist use assert_eq
+ASSERT_DOUBLE_EQ(exp,act);// for doubles
+ASSERT_NEAR(val1,val2, absolute error);// check if two values are withina certain error value
+ASSERT_THROW(functionaname(paramters), execption ex:DivideByZero);// to check for execeptions
+ASSERT_NO_THROW(functionaName(paramterss));// check if it doesnt throw any exeption
+
+to asset_eq or expect_eq two objects like  EXPECT_EQ(obj1,obj2); needs the == operator overloaded
+
+4. ASSERT_* generates fatal failure- aborts the current function- use when it doesnt make sense to continue after the failure
+EXPECT_* generates non fatal failure- 
+use ASSER_EQ(....,....)<<"optional comment"<<optional variable;
+EXPECT_EQ(....,....)<<"optional comment"<<optional variable;
+
+
+5. Use TEST_F  when using test fixtures. first define a test fixture class
+synatax- IMPORTANT
+TEST_F(NAAME OF TEST FIXTURE CLASS, test name)
+
+6. TEST_P  for parametrzed tests- see syntax
+
+
+Test suite is a group of logically related test cases.
+
+A test fixture is a class factorinng out common code for mulitple cases. create test fixtures when a place holder for common test codes is needed. can be used in multiple tests
+write the common code in multiple tests in test fixtures. May have setup and tear down functions.
+: public testing::Test  public derive from testing::Test
+we can add setup- common code that needs to be executded beffore runnning a set of tests and teardown functions (cleanup)- common code that needs to be executed after running a set of tests
+instead of the SetUp and TearDown functions we can put them in constructor and destrcutor as well. 
+
+//HERE THERE IS ACCESS TO THE PROTECTED DATA MEMBERS AND METHODS OF THE TEST FIXTURE CLASS INSIDE THE TEST
+// declare the objects insdie the fixture you want to use in the test.
+//TEST_F allows to access the objects and subroutines in the test fixtue class
+syntax for test fixture
+class MyTestFixture: public ::testing:Test {
+
+  protected: // PUT IT INSIDE PROTECTED!!!!!!!!
+
+  int* ptr;// protected data member available inside the test 
+
+    void SetUp() override{  // AUTOMATICALLY AT THE BEGINING.  these are definded in the abstract class testing and needs to be overriden
+      ptr=new float{4.2}; // no need to add to the constructor- auto executed
+   std::cout<<"setup done\n"
+    }
+
+    void TearDown() override{// AUTOMATICALLY CALLED AT THE END. these are definded inthe abstract class testing and needs to be overriden
+      delete ptr;// no need to add to the destructor - auto executed
+      ptr=nullptr;
+      std::cout<<"TearDown done\n"
+    }
+
+
+
+    static void SetUpTestSuite(){//OPTIONAL- WILL RUN WHEN THE FIRST TEST OF THE TEST SUITE IS EXECUTED
+
+      //will be exeecuted before the very first test is run. usefull for some expensive resource allocation
+    }
+
+    static void TearDownTestSuite(){// OPTIONAL
+
+      //will be callled when the last test of the test suite is done. may be release the expensive resource here
+    }
+};
+
+TEST_F(MyTestFixture, testequalfour){
+  //auto executes SetUp function. ALSO NO NEED TO CREATE AN OBJECT OF THE CLASS HERE. ITS AUTMATICALLY DOEN FOR EACHH TEST SEPERATELY
+  EXPECT_FLOAT_EQ(*ptr,4.2)<<"Value equal to 4.2 check"; //HERE THERE IS ACCESS TO THE PROTECTED DATA MEMBERS AND METHODS OF THE TEST FIXTURE CLASS INSIDE THE TEST
+  //auto executed tear down function.
+}
+
+Name the test suite the same name as the test fixture class. and use TEST_F.
+gtest will create an object of the tesrfixture class automatically
+
+Use GTEST_SKIP() inside a test to skip the test. put it inside the SetUp function of the test fixture to skip the entire test suite 
+
+EXAMPLE:
+
+//DEFINE A CLASS TO BE USED IN THE TEST- NOT THE FIXTURE
+class Person{
+  public:
+    std::string name;
+    int age;
+    std::string nationality;
+
+    Person():name{"anupa"},age{25}{};
+    Person(std::string name, int age):name{name},age{age}{};
+
+    void setPerson(std::string name, int age){
+      this->name=name;
+      this->age;
+    }
+
+
+    void printP(){
+      std::cout<<name<<'\t'<<age<<'\n';
+    }
+
+};
+
+//DEFINE THE TEST FIXTURE
+
+class TestFixturePerson: public testing::Test{
+  protected: //ALWAYS ADD IN PROTECTED- it can be used inside the test.
+
+   Person* PersonPtr;// protected data member available in the test
+
+    void SetUp() override{// auto executes like the constructor
+      PersonPtr= new Person();
+      PersonPtr->nationality= "Sri Lankan"; // do common things you would have to do at the start in the set of tests
+    }
+
+    void TearDown()override{//auto executes like the destructor
+      PersonPtr->printP();
+      delete PersonPtr;// do common things youd have to do at the end of the set of tests
+    }
+
+
+};
+
+
+TEST_F(TestFixturePerson, CheckDefaultAge){ //a TestFixturePerson object is auto created and protected memberrs and available
+  ASSERT_EQ(PersonPtr->age, 25)<<"Person age is not the default age";
+
+}
+
+TEST_F(TestFixturePerson, CheckDefaultName){ //a TestFixturePerson object is auto created and protected memberrs and available
+  ASSERT_EQ(PersonPtr->name, "Anupa")<<"Person name is not the default name";
+
+}
+
+TEST_F(TestFixturePerson, CheckNewAgeandNAme){ //a TestFixturePerson object is auto created and protected memberrs and available
+// person ptr is created in the testfixture and available inside the function
+  PersonPtr->setPerson("jayanatha", 30);// calling a function(its a public function)
+
+  EXPECT_EQ(PersonPtr->age, 30)<<"Person age is wrong";  //if data members of the Person class is private use get functions
+  EXPECT_EQ(PersonPtr->name, "jayanatha")<<"Person name is wrong";
+  ASSERT_NE(PersonPtr->name, "Anupa")<<"Default name is not overriden";
+  ASSERT_NE(PersonPtr->age, 25)<<"Default age is not overriden";
+
+}
+
+
+////////////////////////////////////////////////////////
+PARAMETRIZED TESTS
+
+void bubblesort(std::vector<int> &v){
+  for(int i=0;i<v.size();++){
+    for(int j=0;i<v.size()-i-1;j++){
+      if(v.at(j)>v.at(j+1)){
+        int temp=v.at(j);
+        v.at(j)=v.at(j+1);
+        v.at(j+1)=temp;
+      }
+    }
+  } 
+}
+
+class SortTest: public testing::TestWithParam<std::vector<int>> {
+
+};
+
+TEST_P(SortTest, worksforvariousinputs){
+
+  std::vector<int> in=GetParam();// gets each paramter one by one
+  std::vector<int>  expected=in;// to store the expected vector
+  std::sort(exepected.begin(), expected.end());// sort the vector to get the expected sorted vector to comapre
+
+  bubblesort(in);// the actual is stored in in
+
+  EXPECT_EQ(expected, in);
+}
+
+//TO INSTATINTATE THE TEST
+//syntax
+//INSTANTIATE_TEST_SUITE_P( NAME OF THE INSTANTIATION(any name), test suite name (class name), input paramters to the function)
+// ressults will show as if there were ,multiplle tests. we cam find from the index which parameter failed the test
+
+INSTANTIATE_TEST_SUITE_P(BubbleSortTestVariousInputs, SortTest,
+        testing::Values(std::vector<int>{1,2}, 
+                        std::vector<int>{}
+                        std::vector<int>{16,4,2}, 
+                        std::vector<int>{100,53,-53}, 
+                        std::vector<int>{4,76,12,5,-54})
+                        );
+
+
+
+
+
+//////////////////////TYPED TESTS AND TYPE PARAMETERIZED TESTS
+
+Used to test implementations of an interface- lets say two derived classes of an abstract class. testing their implementations
+
+
+Typed tests-
+Type Parameterized tests-
+
+
+Example: TWO CLASSES ARE DERIVED FROM AN INTERFACE/ ABSTRACT CLASS WITH DIFFERENT IMPLEMENTATION OF A FUNCTION PRESENT IN BOTH
+THE GOAL IS TO TEST THE TWO IMPLEMENTATIONS OF THE THE INTERFACE. ABSTRACT CLASS
+
+class SortClass{
+  virtual void Sort(std::vector<int>& v)==0; // pure virtual function of interface/ abstract class
+};
+
+class SortBubbleClass{
+  void Sort(std::vector<int>& v){// implemented in different way
+     for(int i=0;i<v.size();++){
+    for(int j=0;i<v.size()-i-1;j++){
+      if(v.at(j)>v.at(j+1)){
+        int temp=v.at(j);
+        v.at(j)=v.at(j+1);
+        v.at(j+1)=temp;
+      }
+    }
+  }
+  }
+};
+
+class SortInsertionClass{
+  void Sort(std::vector<int>& v){// implemented in different way
+     for(int i=0;i<v.size();++){
+    for(int j=0;i<v.size()-i-1;j++){
+      if(v.at(j)>v.at(j+1)){
+        int temp=v.at(j);
+        v.at(j)=v.at(j+1);
+        v.at(j+1)=temp;
+      }
+    }
+  }
+  }
+};
+
+
+//DEFINE A TEST FIXTURE CLASS- HERE ITS A TEMPLATIZED CLASS. THE TYPES WILL BE THE TWO IMPLEMENTATIONS
+
+template<class T>
+class SortClassFixture: public testing::Test{// contains a templatized object- cass can be any of the implementations
+  public:
+    T sortinstance;
+};
+
+
+//SPECIAL- ADD THE LIST OF TYPES YOU WANT TO TEST
+using testing::Types;
+
+typedef Types<SortBubbleClass,SortInsertionClass> ImplementationOfSort;//collection of types to pass into the typed_test_suite
+
+TYPED_TEST_SUITE(SortClassFixture,ImplementationOfSort);// DEFINE THE TEST SUITE- syntax TYPES_TEST_SUITE(templatized test fixture, the types you wanna test);
+
+
+//WRITE THE TESTS- use TYPED_TEST macroi syntax TYPED_TEST(templatized test fixture class, test name )
+
+TYPED_TEST(SortClassFixture, vectortestWithfiveElements){
+  std::vector<int> v{1,5,3,7,2};
+  std::vector<int> act{1,2,3,5,7};
+  EXPECT_EQ(this->sortinstance.Sort(v),act);//"SINCE WE ARE INSIDE A DERIVED CLASS TEMPLATE, C++ 
+  //REQURIES US TO VISIT THE MEMBERS OF THE TEST FIXTURE CLASS WITH this->
+
+TYPED_TEST(SortClassFixture, emptyTest){
+  std::vector<int> v{};
+  std::vector<int> act{};
+  EXPECT_EQ(this->sortinstance.Sort(v),act);
+}
+// the above tests will run two times once with SortBubbleClass type obj and then with SortInsertionClass type object
+
+
+
+
+//TYPE- PARAMTERIZED TESTS////////////////
+
+NORMAL TYPED TESTS WILL NOT WORK(COMPILE) UNLESS YOU GIVE THE LIST OF TYPES AND DEFINE THE TYPED_TEST_SUITE PRIOR TO WRITING THE TESTS
+TO ADREESS THIS USE TYPE PARAMETRIZED TESTS. HERE THE ONLY DIFFERENCE IN STRUCTURE IS YOU CAN DEFINE THE TYPES AFTER WRITING THE TESTS. 
+
+INSTEAD OF TYPED_TEST_SUITE USE TYPES_TEST_SUIT_P AND ADD ONLY THE test fixture NAME
+
+TYPED_TEST_SUITE_P(SortClassFixture);
+
+//WRITE THE TESTS- use TYPED_TEST_P instead of TYPED_TEST_P syntax TYPED_TEST_P(templatized test fixture class, test name )
+
+TYPED_TEST(SortClassFixture, vectortestWithfiveElements){
+  std::vector<int> v{1,5,3,7,2};
+  std::vector<int> act{1,2,3,5,7};
+  EXPECT_EQ(this->sortinstance.Sort(v),act);//"SINCE WE ARE INSIDE A DERIVED CLASS TEMPLATE, C++ 
+  //REQURIES US TO VISIT THE MEMBERS OF THE TEST FIXTURE CLASS WITH this->
+
+TYPED_TEST(SortClassFixture, emptyTest){
+  std::vector<int> v{};
+  std::vector<int> act{};
+  EXPECT_EQ(this->sortinstance.Sort(v),act);
+}
+
+//NOW REGISTER THE TEST, 
+SYNTAX: REGISTER_TYPED_TEST_SUITE_P( test fixture nae=me, names of alll the tests);
+
+REGISTER_TYPED_TEST_SUITE_P(SortClassFixture,vectortestWithfiveElements,emptyTest);
+
+
+// NOW AT THE END WE DEFINE THE TYPES- INSTEAD OF HAVING TO DEFINE IT AT THE BEGINING.
+
+using testing::Types;
+
+typedef Types<SortBubbleClass,SortInsertionClass> ImplementationOfSort;//collection of types to pass into the typed_test_suite
+
+//NOW INSTANTIATE THE TEST SUITE
+SYNTAX: INSTANTIATE_TYPED_TEST_SUITE_P(NAME OF THE INSTANTIATION(any name), test fixture class name, types needed to be tested)
+INSTANTIATE_TYPED_TEST_SUITE_P(BubbleInsertionTestInstantiation, SortClassFixture,ImplementationOfSort );
+
+
+
+
+/////////////////////////////////////////////////////////////////////
+
+gmock- mocks are used for testing the behaviour of APIs/ interfaces which will be used in the component
+under test. 
+expensive fucnion outputs, database acccess, functions involving sleeping waiting for user input etc
+tdd- test driven devlopment
+Mock class/object is a lightweight and simplified class to untangle compex dependencies while  testing.
+
+there are fakes- have working implementations but usualy use shortcutss
+ and mocks- have pre programmed expecctations
+
+*/
+
+//////////////////////////////////////////////////////////////
+#include "gmock/gmock.h" //add this for matchers inadditon to gtest/gtest.h
+
+
+Gmock matchers
+
+EXPECT_THAT - asserts that the value matches the matcher- from gmock
+SYNTSX IS DIFFERENT   EXPECT_THAT( ACTUAL VALUE, MATCHER); // OPPOSITE OF EXEPECT_EQ etc
+
+TEST(matcherTest, simpleMatcherTest){
+testing::Matcher<int> is_one=1;// the gmock matchers are explicitly defined
+testing::Matcher<int> is_zero=0;
+testing::Matcher<bool> is_true=true;
+
+EXPECT(1, is_true);
+EXPECT_THAT(2-2,is_zero);
+EXPECT_THAT(1==1, is_true);// gmock matchers are explicitly defined
+ EXPECT_THAT(1==1,true);// HERE THE GMOCK MATCHER IS NOT EXPLICITLY DEFINED
+EXPECT(1, 1);
+EXPECT_THAT(1==1, true);
+
+using ::testing::AllOf;
+using ::testing::Gt;
+using ::testing::Lt;
+int test_value=10;
+EXPECT_THAT(test_value, AllOf(Gt(0),Lt(100))); ///check  test_value for all of(AllOf) these - Greater than(Gt) 0 and Lesser than (Lt) 100
+EXPECT_THAT(test_value, AnyOf(Gt(0),Lt(100))); ///check  test_value for any of(AllOf) these - Greater than(Gt) 0 or Lesser than (Lt) 100
+EXPECT_THAT(test_value, Not(AllOf(Gt(0), Eq(9), Lt(100)))); ///check  test_value for all of(AllOf) these - Greater than(Gt) 0 and Lesser than (Lt) 100
+
+
+}
+//USER DEFINED matchers
+MATCHER_P(IsDivisibleBy, n,"failure messsage optional"){
+  return (arg%n)==0;
+}
+TEST(matcherTest, customMatchersExtraDesciption){
+  EXPECT_THAT(9, IsDivisibleBy(2));
+  EXPECT_THAT(10, Not(IsDivisibleBy(2)));// Not built in
+
+  std::vector<int> v={4,6,8,2};
+  EXPECT_THAT(v, Each(IsDivisibleBy(2))); //Each built in
+}
+
+
+TEST(GenenricComparison, compareTest){
+
+  int a=1;// needs using testing::----
+  EXPECT_THAT(a,Eq(1)); //equal
+  EXPECT_THAT(a,Ge(0));//greater than or equal
+   EXPECT_THAT(a,Gt(0));//greater than 
+   EXPECT_THAT(a,Le(0));//lesser than or equal
+   EXPECT_THAT(a,Lt(0));//lesser 
+   EXPECT_THAT(a,Lt(0));//lesser 
+  EXPECT_THAT(a,Ne(0));//not equal
+
+  bool t=true;
+  bool f=false;
+  EXPECT_THAT(t,IsTrue());//is true function
+  EXPECT_THAT(t,IsFalse());//is false function
+
+  int* ptr=nullptr;
+  int* ntptr=new int{9};
+  EXPECT_THAT(ptr, IsNull);//is null function
+  EXPECT_THAT(ptr, NotNull);//is not null function
+
+  //wildcard - matchers anything
+  int a=1;
+  std::string str_a="aa";
+  EXPECT_THAT(a,1);
+  EXPECT_THAT(a,_);//wildcard matcher- a can be anything
+ EXPECT_THAT(str_a,_); //wildcard matcher- str_a can be anything
+
+  EXPECT_THAT(a, An<int>()); wilcard meatcher but checks that it is an integer. a can be any value(wildcard) but has to be integer
+ 
+
+  std::vector<int> v={1,2,3,4};
+  EXPECT_THAT(v, ElementssAre(1,2,3,4));// check if elements are present in order
+  EXPECT_THAT(v, UnorderedElementssAre(2,1,3,4));  // without order
+  EXPECT_THAT(v, Each(Gt(1)));// checks for each
+  EXPECT_THAT(v, Contains(1)); // cheks if present
+
+
+
+}
+
+
+///////////////MOCKING CLASSES AND FUNCTIONS//////////////////////////////////////////////////////
+
+You can mock libararies, data bases , remote procedural calls(in distributed systems)
+
+Test doubles- fakes/ stubs  and mocks(we are intereste in mocks here)
+
+dummy - an object that is not used
+
+Methodologies for tesing - state and behaviour verification.
+STATE VERIFICATION
+fake- a simplified implementation - ex: a simplified data base that runs logically
+stub- object that has the same interface as the interface but just has some canned values only for testing purposes
+Spy- stub with extra featutes for recrording the state which will then be examined by your unit tests
+
+BEHAVIOUR VERIFICATION- THIS IS WHATS FOLLOWED HERE- NOT STATE VERIFICATION
+Mock- an object to which we can specify "
+  - which of its methods should be called 
+  - how each method should be called  
+  - What each method should return
+
+
+ABSTRACT CLASS- OTHER BANK SERVER CLASSES WILL BE DERIVED FROM THIS ABSTRACT CLASS
+
+class BankServer {
+ public:
+  virtual ~BankServer() {}
+  virtual void Connect() = 0;
+  virtual void Disconnect() = 0;
+  virtual void Credit(int account_number, int value) = 0;
+  virtual void Debit(int account_number, int value) = 0;
+  virtual bool DoubleTransaction(int account_number, int value1,
+                                 int value2) = 0;
+  virtual int GetBalance(int account_number) const = 0;
+};
+
+ATM MACHINE CLASS- IMPORTANT- HERE A POINTER OF AN ABSTRACT CLASS IS USED. ITS INITALY NOT POINTING TO ANYTHING 
+WHEN WE CREATE AN INSTANCE OF THE ATM MACHINE CLASS- WE INJECT THE OBJECT TYPPE IT IS POITING TO USING THE SPECIAL Constructor
+
+[ WE CAN USE   className classObj;
+  AtmMachine(&classobj);// this injects the derived class object that the abstract base class ptr will be pointing to 
+so the relevant overidden fucntions of the specified derived class can be executed
+]
+
+class AtmMachine {
+
+  private:
+  // The bank server we are talking to.
+  BankServer* bankServer_;
+
+ public:
+  // Constructor.
+  AtmMachine(BankServer* bankServer) : bankServer_(bankServer) {}// this constructor injects the objectype that the ptr will point to
+
+  // Withdraws value from account_number.
+  bool Withdraw(int account_number, int value) {
+    bool result = false;
+    bankServer_->Connect();
+    auto available_balance = bankServer_->GetBalance(account_number);
+
+    if (available_balance >= value) {
+      bankServer_->Debit(account_number, value);
+      result = true;
+    }
+
+    bankServer_->Disconnect();
+    return result;
+  }
+
+
+
+// Mock class- inherit from the base class- abstract class
+// and create the mock METHODS
+//syntax:  MOCK_METHOD(retrun type, function name, (args -input paramters inside brackets),(specs like const,override inside brackets) )
+
+class MockBankServer : public BankServer {// inherit from the abstract class
+ public:
+  MOCK_METHOD(void, Connect, (), (override));
+  MOCK_METHOD(void, Disconnect, (), (override));
+  MOCK_METHOD(void, Credit, (int, int), (override));
+  MOCK_METHOD(void, Debit, (int, int), (override));
+  MOCK_METHOD(bool, DoubleTransaction, (int, int, int), (override));
+  MOCK_METHOD(int, GetBalance, (int), (const, override));
+};
+
+TEST(AtmMachine, CanWithdraw){
+  // Arrange
+
+
+  const int account_number=1234;
+  const int withdraw_value=1000;
+  MockBankServer mock_bankserver;
+
+  // Expectations
+  // these functions will be called inside withdraw function
+  // we can leave them unspecified or ON_CALL OR EXPECT_CALL
+  //unspecified will cause void to just return, bool to return false, user defined to call default constructor obj, all others like int etc to return 0
+// ON_CALL - calls will not be verified. can have diferent behavioir for differetn parameters
+//syntax: ON_CALL(mock object, methodname(list of matchers...)). With(multi argument matcherss).WillByDefault(action like Return())
+//Ex:  ON_CALL(mock_bankserver, GetBalance(AllOf(Gt(1000),Lt(2000))).WillByDefault(Return(2000));
+
+//EXPECT_CALL - calls will be verified, will be checked if called- if not TEST FAIL..order of calls and number of calls can also be specfified  can have diferent behavioir for differetn parameters
+//syntax: EXPECT_CALL(mock object, methodname(list of matchers...)). Times(1 or Atleast(1)).WillRepeatedly/WIllOnce(action like Return())
+//Ex:  EXPECT_CALL(mock_bankserver, GetBalance(AllOf(Gt(1000),Lt(2000))).Times(Atleast(1)).WillRepeatedly(Return(2000));
+// can check number of calls with Times. WillOnce, illRepeatedly
+
+  EXPECT_CALL(mock_bankserver, Connect()).Times(1);// call connect function exacly one time
+  EXPECT_CALL(mock_bankserver, GetBalance(_)).Times(1).WillOnce(Return(2000));//_ is for any parameter. call connect function exacly one time and will return 2000
+//ON_CALL(mock_bankserver, GetBalance(account_number)).WillByDfault(Return(2000)); //ON_CALL method
+
+
+
+  EXPECT_CALL(mock_bankserver, Debit(_, _)).Times(1);// _ is for any paramter
+// EXPECT_CALL(mock_bankserver, Debit(_, _)).Times(0);//_is for any paramter- Make sure this is not called
+  EXPECT_CALL(mock_bankserver, Disconnect()).Times(1);// call connect function exacly one time
+
+  // Act
+  AtmMachine atm_machine(&mock_bankserver); // injecting the object the base class ptr is pointg to.
+
+  bool withdraw_result = atm_machine.Withdraw(account_number, withdraw_value);// inside the withdraw function the abve expected_call fucntions will be called the specified times.
+
+  // Assert
+  EXPECT_TRUE(withdraw_result);
+  // cna have other expect macros like  EXPECT_EQ etc
+}
+
+//Uninteresting and interesting mock functions
+// unintersiting calls- functions that will be called but no expect call defined
+//if expect or oncall is not done to functions - left unspecified and  called in the test- they are shown as warnings for uninteresting calls
+// to remove warnings put the mockk object inside nicemock
+// NiceMock<MockBankServer> mock_bankserver;// will hide the warnings
+//StrictMock<MockBankServer> mock_bankserver;// will make the warnings into failures
+
+//unexpectded call has atleast one expect_call defined but  doesnt match anything defined. getbalance(5454646); is unexpected
+
+
+//sequences use InSequence(.......)
+
+to create a sequence like this. with two paths A- B  and A-C-D
+B should happen after A,   D should be after C and C should be after A
+
+    B
+A  
+    C    D
+
+using ::testing::Sequence;
+ Sequence s1, s2;
+ EXPECT_CALL(myMockOb, A()).InSequence(s1,s2);// add to both sequences
+
+ EXPECT_CALL(myMockOb, B()).InSequence(s1);// add to s1 sequence only
+
+ EXPECT_CALL(myMockOb, C()).InSequence(s2);// add to s2 sequence only
+ EXPECT_CALL(myMockOb, D()).InSequence(s2); // add to s2 sequence only
+
+/////////
+forcing partial order of calling disconnect after connect. if not fail
+
+   using ::testing::Sequence;
+   Sequence s1;
+  EXPECT_CALL(mock_bankserver, Connect()).Times(1).InSequence(s1);// 
+  EXPECT_CALL(mock_bankserver, Disconnect()).Times(1).InSequence(s1);// 
+
+
+  // can achieve this using .After and also using InSequence class.
+
+  using InSequence class is  easier
+
+  create InSequence object
+  InSequence seq;
+
+  now specify the expect calls in order. as far as the obj is in scope it will enforce order.
+Can play around with multiple InSequence pbjs in block scopes
+
+///////////////////////////////////////////////////////////////////////////////////
+
+
+GMock actions
+        DoDefault
+        Return
+        SideEffect- do some work 
+        Invoke a function   .willOnce(Invoke(funtionName))
+        Custom- can use functors - class with overloaded () to achieve this 
+
+
+expect_calls are evaluated bottom to top. will check if it matches from bottom to top. important when theres overlap.
+so order is important 
+. general case _ should be on the top and the specific cases on the bottom. as is evaluated bottom up.
+
+  
+ADVANCED TOPICS
+
+Checkpoints
+
+mocking private and protected methods. Make sure in the mock classes to keep them public.
+
+mocking overloadedd fucntions is no differnece.
+
+mocking template classses is simple just make the mock class also tempalted.
+
+
+
+
+MOCKING NON- VIRTUAL CLASSES
+just declare a mock class withtout inheriting
+then instead of DEPENDENCY INJECTION - adding the class poitner through the constructor
+here use a template class for AtmMachine T* bankserverr_;
+ then instantiate 
+ AtmMachine<MockBankServer> atm_machine(&mock_bankserver);
+
+
+MOCKING A FREE FUN CTIOJN- FREE STANDING FUNCTION
+Just use wrapper class and do it.

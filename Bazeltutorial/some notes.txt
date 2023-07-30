@@ -1,0 +1,17 @@
+bazel does not work with directories and files that have spaces in their names
+
+WORKSPACE file is present in the root of the repo and is used to PULL external dependancies. no need to add them manully. BIG ADVANTAGE
+BUILD file stores the instructions
+use run command to run something. it will build files in baze-bin and also run them directly
+format is
+
+bazel run directory/directory:namegiven inside the BUILD folder
+
+bazel run examples/example3:example3
+
+this builds the executables in the bazel-bin directory
+from there can run without bazel as its now built
+
+ bazel-bin/examples/example3/example3.exe
+
+

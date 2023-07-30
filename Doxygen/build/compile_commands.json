@@ -1,0 +1,7 @@
+[
+{
+  "directory": "E:/C++ course/Doxygen/build",
+  "command": "C:\\msys64\\mingw64\\bin\\g++.exe   -g -o CMakeFiles\\doxygenPractice.dir\\main.cpp.obj -c \"E:\\C++ course\\Doxygen\\main.cpp\"",
+  "file": "E:/C++ course/Doxygen/main.cpp"
+}
+]

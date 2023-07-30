@@ -1,0 +1,302 @@
+eye ball the other files in the becnh mark folder as well.
+
+
+Can use this to figure out runtime in a system- however this may change based on the system
+Google benches can be used to make test benches to benchmark perfromance
+Can be used to compare performance of algorithms.
+
+1. can sweep the values over a range to look at the change in runtime
+2. We can figure out runtime complexity in bigO notation. we can also get the coefficent highest term
+in the runtime complexity expression.
+3. We can also get the output in json, csv etc to plot the graphs
+
+
+Optimizations are done in the compiler, cpu and cache
+
+Compiler- reordering, loop unrolling 
+CPU- out of order execution, branch prediction
+Cache- prefetching, buffering
+some times main memory also may be ram and part virtual memory. so may behave differenly
+
+also optimizer flags will affeect the ressu0 things may be done in compiletime givng a zero or small value unexpectedly= -O2, -O3
+Also what you need to measure is the optimized versions performance- the release version's performance
+
+this makes it difficult to understand whats going on and may lead to unexpected behaviors.
+Because of this, behaviour indifferent systems may be different.
+
+
+// benchmark::DoNotOptimize(sum++);// DESPITE THE OPTIMZER FLAGS- THIS WILL PREVENT OPTIMIZATION- forces the rresult to be stored in registerr or memory
+// although when using optimizer flags it gets done in compile time. its cause in this benchmark the values are known at compile time. but in actual use the value may not be known at compiletime to do compiletime optimization
+// benchmark::ClobberMemory();// forces compiler to perform all pending writes to global memory- prevents goin to cache
+
+      state.PauseTiming();
+      unsigned long sum = 0; // TIME TAKEN FOR THIS WILL NOT BE COUNTED-
+    state.ResumeTiming();
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+// JUST USE bazel run src/benchmark/main_benchmark -c opt   THIS IS ENOUGH
+
+//THIS GIVES INFORMATION OF THE SYSTEM AS WELL LIKE CPU CORES AND THE CPU CACHE INFORMATION
+// Run on (4 X 2712 MHz CPU s)
+// CPU Caches:
+//   L1 Data 32 KiB (x2)
+//   L1 Instruction 32 KiB (x2)
+//   L2 Unified 256 KiB (x2)
+//   L3 Unified 3072 KiB (x1)
+
+//LOOK AT THE CPU TIME.
+
+#include "benchmark/benchmark.h" //FOR BENCHMARKING
+
+#include <string>
+
+void SomeFunction(size_t size) { //FUNCTION TO BE BENCHMARKED
+  std::string s1(size, '-');
+  std::string s2(size, '-');
+  benchmark::DoNotOptimize(s1.compare(s2));  // this prevents optimization
+}
+
+static void BM_SomeFunction(benchmark::State& state) {  //WRAPPER FOR BENCHMARKING- REMEMBER SYNTAX static void BM_SomeFucntion(benchmark::State& state)
+  // Perform setup here
+  for (auto _ : state) {      //THE FUNCTION WILL BE EXECUTED AS MANY TIMES AS NECESSARY UNTILL A STABLE VALUE IS OBTAINED FOR RUNTIME
+    // This code gets timed         auto _ is a variable called _ , but not used in the loop
+    SomeFunction(state.range(0)); //(bad naming) STATE.RANGE(0) IS THE first parameter IN THE ->Arg(param1  ). instead we can just add SomeFunction(10000);// will ouput just for 10000. also when registering use BENCHMARK(BM_StringComparison) without ->Arg
+// if theres multiple input parameters SomeFunction(state.range(0),state.range(1)); // BENCHMARK(BM_SomeFunction)->Args({100000,299})->Args({1000,29900})->Args({10090,29999}); // use s not Arg here.
+  }
+}
+
+//##############################################################
+
+// Register the function as a benchmark
+// BENCHMARK(BM_SomeFunction)->Arg(100000)->Arg(200000)->Arg(400000) ->Complexity(); // GIVING MULTIPLE INPUT VALUES. THIS APPROACH IS ALSO GOod... complexity is optional and gives bigO and the coefficenet of the highest term in the complexity expression
+// ->Complexity(benchmark::oLogN);//THIS WILL GIVE THE COEFFICENT OF THE MAXIMUM TERM IN THE COMLEXITY EXPRESSION if the bigo is known use this.
+
+
+BENCHMARK(BM_SomeFunction)->RangeMultiplier(2)->Range(1 << 10, 1 << 20);// REGISTER THE WRAPPER AS A BENCHMARK. here sweep the first argument from 2 to the power 10 to 2 to the power 20.
+
+//BENCHMARK(BM_SomeFunction)->RangeMultiplier(2)-Ranges({{1<<8,1<<10},{1,5}})// when theres multiple input values use ranges, first argument from 2 to the power 10 to 2 to the power 20. and second from 1 to 5 multiplied by 2.
+
+
+//##########################################################
+// Run the benchmark
+BENCHMARK_MAIN();// REPLACES THE MAIN FUNCTION- no  need main function
+
+
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+
+/**
+RUNNNING WITH OPTIMIZER FLAGS
+
+// JUST USE bazel run src/benchmark/main_benchmark_adder -c opt    HERE  -c -opt wll cause =O2 optimizer flags to be added in bazel
+// to be specific use -c -opt -copt=O3     to specify the optimizer flag
+//times may become zero because of optimization- may be done in compile time. to confirm use a combination of assembly code viewing
+ */
+#include "benchmark/benchmark.h"
+
+#include <iostream>
+#include <string>
+// benchmark::DoNotOptimize(sum++);// DESPITE THE OPTIMZER FLAGS- THIS WILL PREVENT OPTIMIZATION- forces the rresult to be stored in registerr or memory
+// benchmark::ClobberMemory();// forces compiler to perform all pending writes to global memory- prevents goin to cache
+
+
+/**
+ * Increments n times and returns the value
+ */
+unsigned long Increment(unsigned long n) {
+  unsigned long sum = 0;
+  for (unsigned long i = 0; i < n; i++) {
+    benchmark::DoNotOptimize(sum++);// prevents optimization or else will do it in compiletime
+    benchmark::ClobberMemory();// forces to global main memory
+  }
+  return sum;
+}
+/**
+ * A Benchmark for Increment
+ */
+static void BM_Increment(benchmark::State& state) {
+  // Perform setup here
+  for (auto _ : state) {
+    // This code gets timed
+    Increment(state.range(0));
+  }
+}
+
+// Register the function as a benchmark
+BENCHMARK(BM_Increment)->RangeMultiplier(2)->Range(1 << 8, 1 << 10)->Complexity();  // complexity is optional- gives the big 0 and  gives the 
+//coefficeent of the highesst term in the complexity expression
+
+// Run the benchmark
+BENCHMARK_MAIN();
+
+//#################PAUSE TIMING####################################
+
+/**
+ * Adds value n times and returns the result
+ */
+unsigned long AddByValue(unsigned long n, unsigned long value) {
+      state.PauseTiming();
+      unsigned long sum = 0; // TIME TAKEN FOR THIS WILL NOT BE COUNTED-
+    state.ResumeTiming();
+
+  for (unsigned long i = 0; i < n; i++) {
+    sum += value; // can add benchmark::DoNotOptimize(sum+=value); to prevent optimization here- or else might give zero if done in compile tiime
+  }    // can add benchmark::ClobberMemory(); to force to use global memory
+  return sum;
+}
+
+/**
+ * A Benchmark for AddByValue
+ */
+static void BM_AddByValue(benchmark::State& state) {
+  // Perform setup here
+  for (auto _ : state) {
+    // This code gets timed
+    AddByValue(state.range(0), state.range(1));
+  }
+}
+
+// Register the function as a benchmark
+BENCHMARK(BM_Increment)->Args({100,200})->Args({300,500});
+
+// Run the benchmark
+BENCHMARK_MAIN();
+
+
+//$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+
+COMPARING SEARCH ALGORITHMS
+
+// the BM searech was fast. multi threaded BM had overhead from creating threads so was slow. 
+#include "benchmark/benchmark.h"
+#include <stdlib.h> /* qsort */
+
+#include <cstdlib>
+#include <iostream>
+#include <numeric>
+#include <string>
+#include <thread>
+#include <vector>
+
+#include "src/lib/search/search.h" // search class defined in src/lib
+
+const long g_size = 1000000000000;
+template <class T>
+int Search<T>::number_of_threads = 10;
+
+class Data {
+ public:
+  Data(long size) { ConstructSortedVector(size); }
+
+  void ConstructRandomVector(long size) {
+    std::srand(10);
+    v.resize(size);
+    std::generate(v.begin(), v.end(), std::rand);
+    std::sort(v.begin(), v.end());
+  }
+
+  void ConstructSortedVector(long size) {
+    v.resize(size);
+    std::iota(v.begin(), v.end(), 0);
+  }
+
+  std::vector<unsigned long> v;
+};
+
+Data init(long size = g_size) {
+  Data d(size);
+  return d;
+}
+
+static void BM_BinarySearch(benchmark::State& state) {
+  for (auto _ : state) {
+    state.PauseTiming();
+    auto d = init(state.range(0));//TIME TAKEN INSIDE THIS IS IGNORED
+    state.ResumeTiming();
+    Search<unsigned long>::BinarySearch(d.v, d.v[100]);
+  }
+  state.SetItemsProcessed(state.iterations() * state.range(0));
+  state.SetComplexityN(state.range(0));
+}
+
+static void BM_ExponentialSearch(benchmark::State& state) {// EXPONENTIAL SEARCH could be faster for values earlier in the array, but later in the array is slow
+  for (auto _ : state) {
+    state.PauseTiming();
+    auto d = init(state.range(0));//TIME TAKEN INSIDE THIS IS IGNORED
+    state.ResumeTiming();
+    Search<unsigned long>::ExponentialSearch(d.v, d.v[100]);
+  }
+  state.SetItemsProcessed(state.iterations() * state.range(0));
+  state.SetComplexityN(state.range(0));
+}
+
+static void BM_TernarySearch(benchmark::State& state) {// DIVIDED IN TO 3 INSTEAD OF 2. almost similar to BM
+  for (auto _ : state) {
+    state.PauseTiming();
+    auto d = init(state.range(0));
+    state.ResumeTiming();
+    Search<unsigned long>::TernarySearch(d.v, d.v[10000]);
+  }
+  state.SetItemsProcessed(state.iterations() * state.range(0));
+  state.SetComplexityN(state.range(0));
+}
+
+static void BM_BinarySearchPar(benchmark::State& state) {
+  for (auto _ : state) {
+    state.PauseTiming();
+    auto d = init(state.range(0));//TIME TAKEN INSIDE THIS IS IGNORED
+    Search<unsigned long>::number_of_threads = state.range(1);C// THIS IS MULTI THREADED BINARY SEARCH- ACTUALLY SLOWER here THAN NORMAL BS- overhead of crearing threads
+
+    state.ResumeTiming();
+    Search<unsigned long>::BinarySearchPar(d.v, d.v[100]);
+  }
+  state.SetItemsProcessed(state.iterations() * state.range(0));
+  state.SetComplexityN(state.range(0));
+}
+
+
+// Compare binary search, ternary search, and exponential search
+BENCHMARK(BM_BinarySearch)
+    ->RangeMultiplier(2)
+    ->Range(1 << 15, 1 << 18)
+    ->Complexity(benchmark::oLogN);  //THIS WILL GIVE THE COEFFICENT OF THE MAXIMUM TERM IN THE COMLEXITY EXPRESSION
+
+// BENCHMARK(BM_TernarySearch)
+//     ->RangeMultiplier(2)
+//     ->Range(1 << 15, 1 << 18)
+//     ->Complexity(benchmark::oLogN);
+
+BENCHMARK(BM_ExponentialSearch)
+    ->RangeMultiplier(2)
+    ->Range(1 << 15, 1 << 18)
+    ->Complexity(benchmark::oLogN);//THIS WILL GIVE THE COEFFICENT OF THE MAXIMUM TERM IN THE COMLEXITY EXPRESSION
+
+BENCHMARK(BM_BinarySearchPar)
+    ->RangeMultiplier(2)
+    ->Ranges({{1 << 15, 1 << 18}, {2, 2}})
+    -Complexity(benchmark::oLogN);//THIS WILL GIVE THE COEFFICENT OF THE MAXIMUM TERM IN THE COMLEXITY EXPRESSION
+
+//-----------------------------------------------------
+// Comparison of BinarySearch and BinarySearchPar changing number of threads
+// Run with:
+// bazel run --cxxopt='-std=c++17' -c opt src/benchmark/main_benchmark_search -- --benchmark_format=csv | tee bs_vs_bs_par_10k.csv 
+// BENCHMARK(BM_BinarySearch)->Arg(g_size);
+// BENCHMARK(BM_BinarySearchPar)
+//     ->UseRealTime()
+//     ->Args({g_size, 2})
+//     ->Args({g_size, 3})
+//     ->Args({g_size, 4})
+//     ->Args({g_size, 5})
+//     ->Args({g_size, 6})
+//     ->Args({g_size, 7})
+//     ->Args({g_size, 8})
+//     ->Args({g_size, 9})
+//     ->Args({g_size, 10});
+//-----------------------------------------------------
+
+BENCHMARK_MAIN();

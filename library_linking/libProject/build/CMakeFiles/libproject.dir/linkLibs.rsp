@@ -1,0 +1,1 @@
+  -L"E:/C++course/library_linking/libProject/Dependencies64/GLFW/lib-mingw-w64"  -lglfw3 -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 
